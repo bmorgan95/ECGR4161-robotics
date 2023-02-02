@@ -273,6 +273,12 @@ void bumper123(){
   if (isBumpSwitchPressed(0) == true and          //1 2 3 same time
       isBumpSwitchPressed(1) == true and
       isBumpSwitchPressed(2) == true){
+
+        while (isBumpSwitchPressed(0) == true and          //do nothing while switch is held
+            isBumpSwitchPressed(1) == true and
+            isBumpSwitchPressed(2) == true){
+              
+            }
       
     digitalWrite(RED_LED, HIGH);                  //all leds on, leave on
     digitalWrite(BLUE_LED, HIGH);
@@ -379,7 +385,15 @@ void bumper4(){                                     //rgb rainbow vomit when bum
 //*************************************************************
 
 void bumper5(){  //turn off all leds when bumper 5 is pressed
+
+  
   if (isBumpSwitchPressed(4) == true){
+
+    while (isBumpSwitchPressed(4) == true){      //do nothing while switch is pressed
+      
+    }
+
+
     digitalWrite(RED_LED, LOW);
     digitalWrite(BLUE_LED, LOW);
     digitalWrite(GREEN_LED, LOW);
