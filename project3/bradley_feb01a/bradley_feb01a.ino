@@ -1,3 +1,8 @@
+//*************************************************************
+//  Lab 3: Bump Switch LEDs
+//  Bradley Morgan and Jacob Santschi  2020-2-2
+//*************************************************************
+
 #include <Bump_Switch.h>
 #include <Encoder.h>
 #include <GP2Y0A21_Sensor.h>
@@ -33,6 +38,9 @@ bumper2();
   
 }
 
+//*************************************************************
+//  Function for only Bumper 1, blinking Red
+//*************************************************************
 
 void bumper1() {                                     //blink red 1Hz (cycle time 1000ms)
   if (isBumpSwitchPressed(0) == true){
@@ -60,6 +68,9 @@ void bumper1() {                                     //blink red 1Hz (cycle time
   }
 }
 
+//*************************************************************
+//  Function for only Bumper 2, blinking Green
+//*************************************************************
 
 void bumper2(){                                     //blink green 2Hz (cycle time 500ms)
   if (isBumpSwitchPressed(1) == true){
@@ -87,6 +98,9 @@ void bumper2(){                                     //blink green 2Hz (cycle tim
   }
 }
 
+//*************************************************************
+//  Function for only Bumper 3, blinking Blue
+//*************************************************************
 
 void bumper3(){                                     //blink blue 4Hz (cycle time 250ms)
   if (isBumpSwitchPressed(2) == true){
@@ -114,6 +128,10 @@ void bumper3(){                                     //blink blue 4Hz (cycle time
   }
 
 }
+
+//*************************************************************
+//  Function for Bumpers 1 and 2, blinking Red and Green
+//*************************************************************
 
 void bumper12(){
 
@@ -145,7 +163,9 @@ void bumper12(){
 
 }
 
-
+//*************************************************************
+//  Function for Bumpers 1 and 3, blinking Red and Blue
+//*************************************************************
 
 void bumper13(){
 
@@ -180,6 +200,10 @@ void bumper13(){
 
 }
 
+//*************************************************************
+//  Function for Bumpers 2 and 3, blinking Green and Blue
+//*************************************************************
+
 void bumper23(){
   if (isBumpSwitchPressed(1) == true and          //green blue blink same time, 32Hz (31.25ms cycle time, 32ms for ease, effective 31.25Hz because integers :P)
       isBumpSwitchPressed(2) == true){
@@ -207,6 +231,9 @@ void bumper23(){
 
 }
 
+//*************************************************************
+//  Function for all 3 Bumpers, keeping all 3 LEDs on
+//*************************************************************
 
 void bumper123(){
   if (isBumpSwitchPressed(0) == true and          //1 2 3 same time
@@ -219,6 +246,9 @@ void bumper123(){
   }
 }
 
+//*************************************************************
+//  Function for only Bumper 4, blinking 3 LEDs in sequence
+//*************************************************************
 
 void bumper4(){  //rgb rainbow vomit when bumper 4 is pressed
   if (isBumpSwitchPressed(3) == true){
@@ -300,6 +330,10 @@ void bumper4(){  //rgb rainbow vomit when bumper 4 is pressed
   }
  
 }
+
+//*************************************************************
+//  Function for only Bumper 5, deactivating all LEDs
+//*************************************************************
 
 void bumper5(){  //turn off all leds when bumper 5 is pressed
   if (isBumpSwitchPressed(4) == true){
