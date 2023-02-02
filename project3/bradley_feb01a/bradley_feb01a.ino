@@ -47,6 +47,10 @@ bumper2();
 void bumper1() {                          //blink red 1Hz (cycle time 1000ms)
   if (isBumpSwitchPressed(0) == true){
 
+    while (isBumpSwitchPressed(0) == true){       //do nothing while switch is held
+      
+    }
+
     while (isBumpSwitchPressed(0) == false and      //loop if no bumpers are pressed
            isBumpSwitchPressed(1) == false and
            isBumpSwitchPressed(2) == false and
@@ -77,6 +81,10 @@ void bumper1() {                          //blink red 1Hz (cycle time 1000ms)
 void bumper2(){                           //blink green 2Hz (cycle time 500ms)
   if (isBumpSwitchPressed(1) == true){
 
+    while (isBumpSwitchPressed(1) == true){         //do nothing while switch is held
+      
+    }
+
     while (isBumpSwitchPressed(0) == false and      //loop if no bumpers are pressed
            isBumpSwitchPressed(1) == false and
            isBumpSwitchPressed(2) == false and
@@ -106,6 +114,10 @@ void bumper2(){                           //blink green 2Hz (cycle time 500ms)
 
 void bumper3(){                            //blink blue 4Hz (cycle time 250ms)
   if (isBumpSwitchPressed(2) == true){
+
+    while (isBumpSwitchPressed(2) == true){       //do nothing while switch is held
+      
+    }
 
     while (isBumpSwitchPressed(0) == false and      //loop if no bumpers are pressed
            isBumpSwitchPressed(1) == false and
@@ -139,6 +151,11 @@ void bumper12(){
 
   if (isBumpSwitchPressed(0) == true and //red green blink, 16Hz (125ms cycle time)
       isBumpSwitchPressed(1) == true){
+
+        while (isBumpSwitchPressed(0) == true and       //do nothing while switch is held
+               isBumpSwitchPressed(1) == true){
+                
+               }
 
         while (isBumpSwitchPressed(0) == false and      //loop if no bumpers are pressed
            isBumpSwitchPressed(1) == false and
@@ -174,6 +191,11 @@ void bumper13(){
   if (isBumpSwitchPressed(1) == true and     //red blue blink, 16Hz
       isBumpSwitchPressed(2) == true){
 
+        while (isBumpSwitchPressed(1) == true and     //do nothing while switch is held
+            isBumpSwitchPressed(2) == true){
+              
+            }
+
 
         while (isBumpSwitchPressed(0) == false and //loop if no bumpers are pressed
            isBumpSwitchPressed(1) == false and
@@ -207,9 +229,17 @@ void bumper13(){
 //*************************************************************
 
 void bumper23(){
-  if (isBumpSwitchPressed(1) == true and          
-  //green blue blink, 32Hz 
+
+  
+  if (isBumpSwitchPressed(1) == true and          //green blue blink, 32Hz 
       isBumpSwitchPressed(2) == true){
+
+        while (isBumpSwitchPressed(1) == true and          //do nothing while switch is held 
+            isBumpSwitchPressed(2) == true){
+              
+            }
+
+        
         while (isBumpSwitchPressed(0) == false and //loop if no bumpers are pressed
            isBumpSwitchPressed(1) == false and
            isBumpSwitchPressed(2) == false and
@@ -239,6 +269,7 @@ void bumper23(){
 //*************************************************************
 
 void bumper123(){
+
   if (isBumpSwitchPressed(0) == true and          //1 2 3 same time
       isBumpSwitchPressed(1) == true and
       isBumpSwitchPressed(2) == true){
@@ -253,8 +284,17 @@ void bumper123(){
 //  Function for only Bumper 4, blinking 3 LEDs in sequence
 //*************************************************************
 
-void bumper4(){  //rgb rainbow vomit when bumper 4 is pressed
+void bumper4(){                                     //rgb rainbow vomit when bumper 4 is pressed
+
+  
   if (isBumpSwitchPressed(3) == true){
+
+    while (isBumpSwitchPressed(3) == true){         //do nothing while switch is held
+      
+    }
+
+
+    
     while (isBumpSwitchPressed(0) == false and      //loop if no bumpers are pressed
            isBumpSwitchPressed(1) == false and
            isBumpSwitchPressed(2) == false and
