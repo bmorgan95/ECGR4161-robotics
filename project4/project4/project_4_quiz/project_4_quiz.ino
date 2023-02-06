@@ -1,8 +1,11 @@
 //============================================================================ 
-// File:  Drive_straight_encoder_adjust 
+// File:  project_4_quiz 
 // 
 // 2022-06-13 - James Conrad, from code borrowed from TI 
 //    (some of this original code by Franklin S. Cooper Jr.) 
+//
+// 2022-06-23 - Bradley Morgan, bug fixes and functionality improvements
+//
 // Summary: 
 //  This example will demonstrate the various features of the motor library. 
 //  The robot will go forward for a specified amount of time.  
