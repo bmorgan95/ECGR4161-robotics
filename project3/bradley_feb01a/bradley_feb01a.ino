@@ -45,7 +45,14 @@ bumper2();
 //*************************************************************
 
 void bumper1() {                          //blink red 1Hz (cycle time 1000ms)
-  if (isBumpSwitchPressed(0) == true){
+
+  
+  if (isBumpSwitchPressed(0) == true and
+      isBumpSwitchPressed(1) == false and
+      isBumpSwitchPressed(2) == false and
+      isBumpSwitchPressed(3) == false and
+      isBumpSwitchPressed(4) == false and
+      isBumpSwitchPressed(5) == false){
 
     while (isBumpSwitchPressed(0) == true){       //do nothing while switch is held
       
@@ -71,6 +78,8 @@ void bumper1() {                          //blink red 1Hz (cycle time 1000ms)
             delay(500);
            }
 
+      delay(50);           //delay after function loop to ensure smooth transitions
+
   }
 }
 
@@ -79,7 +88,14 @@ void bumper1() {                          //blink red 1Hz (cycle time 1000ms)
 //*************************************************************
 
 void bumper2(){                           //blink green 2Hz (cycle time 500ms)
-  if (isBumpSwitchPressed(1) == true){
+
+  
+  if (isBumpSwitchPressed(0) == false and
+      isBumpSwitchPressed(1) == true and
+      isBumpSwitchPressed(2) == false and
+      isBumpSwitchPressed(3) == false and
+      isBumpSwitchPressed(4) == false and
+      isBumpSwitchPressed(5) == false){
 
     while (isBumpSwitchPressed(1) == true){         //do nothing while switch is held
       
@@ -105,6 +121,8 @@ void bumper2(){                           //blink green 2Hz (cycle time 500ms)
             delay(250);
            }
 
+      delay(50);           //delay after function loop to ensure smooth transitions
+
   }
 }
 
@@ -113,7 +131,14 @@ void bumper2(){                           //blink green 2Hz (cycle time 500ms)
 //*************************************************************
 
 void bumper3(){                            //blink blue 4Hz (cycle time 250ms)
-  if (isBumpSwitchPressed(2) == true){
+
+  
+  if (isBumpSwitchPressed(0) == false and
+      isBumpSwitchPressed(1) == false and
+      isBumpSwitchPressed(2) == true and
+      isBumpSwitchPressed(3) == false and
+      isBumpSwitchPressed(4) == false and
+      isBumpSwitchPressed(5) == false){
 
     while (isBumpSwitchPressed(2) == true){       //do nothing while switch is held
       
@@ -139,6 +164,8 @@ void bumper3(){                            //blink blue 4Hz (cycle time 250ms)
             delay(125);
            }
 
+      delay(50);           //delay after function loop to ensure smooth transitions
+
   }
 
 }
@@ -149,10 +176,19 @@ void bumper3(){                            //blink blue 4Hz (cycle time 250ms)
 
 void bumper12(){
 
-  if (isBumpSwitchPressed(0) == true and //red green blink, 16Hz (125ms cycle time)
-      isBumpSwitchPressed(1) == true){
 
-        while (isBumpSwitchPressed(0) == true and       //do nothing while switch is held
+  if (isBumpSwitchPressed(0) == true and
+      isBumpSwitchPressed(1) == true and
+      isBumpSwitchPressed(2) == false and
+      isBumpSwitchPressed(3) == false and
+      isBumpSwitchPressed(4) == false and
+      isBumpSwitchPressed(5) == false){
+
+  
+                                                       //red green blink, 16Hz (125ms cycle time)
+     
+
+        while (isBumpSwitchPressed(0) == true or       //do nothing while switch is held
                isBumpSwitchPressed(1) == true){
                 
                }
@@ -178,6 +214,8 @@ void bumper12(){
 
            }
 
+      delay(50);           //delay after function loop to ensure smooth transitions
+
       }
 
 }
@@ -188,10 +226,18 @@ void bumper12(){
 
 void bumper13(){
 
-  if (isBumpSwitchPressed(1) == true and     //red blue blink, 16Hz
-      isBumpSwitchPressed(2) == true){
 
-        while (isBumpSwitchPressed(1) == true and     //do nothing while switch is held
+  if (isBumpSwitchPressed(0) == true and
+      isBumpSwitchPressed(1) == false and
+      isBumpSwitchPressed(2) == true and
+      isBumpSwitchPressed(3) == false and
+      isBumpSwitchPressed(4) == false and
+      isBumpSwitchPressed(5) == false){
+
+                                                       //red blue blink, 16Hz
+     
+
+        while (isBumpSwitchPressed(1) == true or     //do nothing while switch is held
             isBumpSwitchPressed(2) == true){
               
             }
@@ -220,6 +266,8 @@ void bumper13(){
       
       }
 
+      delay(50);           //delay after function loop to ensure smooth transitions
+
    }
 
 }
@@ -230,11 +278,19 @@ void bumper13(){
 
 void bumper23(){
 
-  
-  if (isBumpSwitchPressed(1) == true and          //green blue blink, 32Hz 
-      isBumpSwitchPressed(2) == true){
 
-        while (isBumpSwitchPressed(1) == true and          //do nothing while switch is held 
+  if (isBumpSwitchPressed(0) == false and
+      isBumpSwitchPressed(1) == true and
+      isBumpSwitchPressed(2) == true and
+      isBumpSwitchPressed(3) == false and
+      isBumpSwitchPressed(4) == false and
+      isBumpSwitchPressed(5) == false){
+
+  
+                                                    //green blue blink, 32Hz 
+
+
+        while (isBumpSwitchPressed(1) == true or          //do nothing while switch is held 
             isBumpSwitchPressed(2) == true){
               
             }
@@ -260,7 +316,10 @@ void bumper23(){
             delay(16);
 
       }
-}
+
+      delay(50);           //delay after function loop to ensure smooth transitions
+      
+    }
 
 }
 
@@ -270,12 +329,16 @@ void bumper23(){
 
 void bumper123(){
 
-  if (isBumpSwitchPressed(0) == true and          //1 2 3 same time
-      isBumpSwitchPressed(1) == true and
-      isBumpSwitchPressed(2) == true){
 
-        while (isBumpSwitchPressed(0) == true and          //do nothing while switch is held
-            isBumpSwitchPressed(1) == true and
+  if (isBumpSwitchPressed(0) == true and
+      isBumpSwitchPressed(1) == true and
+      isBumpSwitchPressed(2) == true and
+      isBumpSwitchPressed(3) == false and
+      isBumpSwitchPressed(4) == false and
+      isBumpSwitchPressed(5) == false){
+
+        while (isBumpSwitchPressed(0) == true or          //do nothing while switch is held
+            isBumpSwitchPressed(1) == true or
             isBumpSwitchPressed(2) == true){
               
             }
@@ -283,6 +346,9 @@ void bumper123(){
     digitalWrite(RED_LED, HIGH);                  //all leds on, leave on
     digitalWrite(BLUE_LED, HIGH);
     digitalWrite(GREEN_LED, HIGH);
+
+      delay(50);           //delay after function loop to ensure smooth transitions
+    
   }
 }
 
@@ -292,8 +358,14 @@ void bumper123(){
 
 void bumper4(){                                     //rgb rainbow vomit when bumper 4 is pressed
 
+
   
-  if (isBumpSwitchPressed(3) == true){
+  if (isBumpSwitchPressed(0) == false and
+      isBumpSwitchPressed(1) == false and
+      isBumpSwitchPressed(2) == false and
+      isBumpSwitchPressed(3) == true and
+      isBumpSwitchPressed(4) == false and
+      isBumpSwitchPressed(5) == false){
 
     while (isBumpSwitchPressed(3) == true){         //do nothing while switch is held
       
@@ -376,6 +448,9 @@ void bumper4(){                                     //rgb rainbow vomit when bum
 
            }
 
+      delay(50);           //delay after function loop to ensure smooth transitions
+           
+
   }
  
 }
@@ -387,7 +462,12 @@ void bumper4(){                                     //rgb rainbow vomit when bum
 void bumper5(){  //turn off all leds when bumper 5 is pressed
 
   
-  if (isBumpSwitchPressed(4) == true){
+  if (isBumpSwitchPressed(0) == false and
+      isBumpSwitchPressed(1) == false and
+      isBumpSwitchPressed(2) == false and
+      isBumpSwitchPressed(3) == false and
+      isBumpSwitchPressed(4) == true and
+      isBumpSwitchPressed(5) == false){
 
     while (isBumpSwitchPressed(4) == true){      //do nothing while switch is pressed
       
@@ -398,5 +478,8 @@ void bumper5(){  //turn off all leds when bumper 5 is pressed
     digitalWrite(BLUE_LED, LOW);
     digitalWrite(GREEN_LED, LOW);
   }
+
+      delay(50);           //delay after function loop to ensure smooth transitions
+  
   
 }
