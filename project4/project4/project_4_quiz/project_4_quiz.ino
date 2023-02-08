@@ -15,8 +15,8 @@
 #include "SimpleRSLK.h" 
  
 #define PULSES_1CM 16.37022272     // Number of pulses for 1 cm straight 
-#define WHEELSPEED_L 30 
-#define WHEELSPEED_R 30 
+#define WHEELSPEED_L 10 
+#define WHEELSPEED_R 10
 #define ENCODER_DIFF 1         // The difference between wheel encoders to cause 
                                // a motor speed change.  Initially 1 
  
