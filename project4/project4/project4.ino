@@ -41,7 +41,7 @@ void loop() {
   delay(3000);
   rotateCWDegrees(180);
   delay(1000);
-  driveStraight(pulses+8);
+  driveStraight(pulses);
   delay(1000);
   rotateCWDegrees(180);
 
