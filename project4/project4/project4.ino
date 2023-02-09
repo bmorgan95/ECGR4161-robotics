@@ -41,7 +41,7 @@ void loop() {
   delay(3000);
   rotateCWDegrees(180);
   delay(1000);
-  driveStraight(pulses);
+  driveStraight(pulses+8);
   delay(1000);
   rotateCWDegrees(180);
 
@@ -122,7 +122,7 @@ void rotateCWDegrees (int turnAngle){
 	setMotorDirection(RIGHT_MOTOR, MOTOR_DIR_BACKWARD);
 
   //14.05*pi cm per 1 degree of robot turn, 
-  int turnPulses = 2.00714*(turnAngle*1.00625-3); 
+  int turnPulses = (2.00714*(turnAngle*1.00625-3)); 
   //compensate for measurement error and stoppage rollover
   
   enableMotor(BOTH_MOTORS);                         // "Turn on" the motor  
