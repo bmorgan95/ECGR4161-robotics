@@ -1,36 +1,62 @@
+/*
+ * Energia Robot Library for Texas Instruments' Robot System Learning Kit (RSLK)
+ * Line Following Example
+ *
+ * Summary:
+ * This example has the TI Robotic System Learning Kit (TI RSLK) follow a line
+ * using a basic line following algorithm. This example works on a dark floor with
+ * a white line or a light floor with a dark line. The robot first needs to be calibrated
+ * Then place the robot on the hit the left button again to begin the line following.
+ *
+ * How to run:
+ * 1) Push left button on Launchpad to have the robot perform calibration.
+ * 2) Robot will drive forwards and backwards by a predefined distance.
+ * 3) Place the robot center on the line you want it to follow.
+ * 4) Push left button again to have the robot begin to follow the line.
+ *
+ * Parts Info:
+ * o Black eletrical tape or white electrical tape. Masking tape does not work well
+ *   with IR sensors.
+ *
+ * Learn more about the classes, variables and functions used in this library by going to:
+ * https://fcooper.github.io/Robot-Library/
+ *
+ * Learn more about the TI RSLK by going to http://www.ti.com/rslk
+ *
+ * created by Franklin Cooper Jr.
+ *
+ * This example code is in the public domain.
+ */
 
 #include "SimpleRSLK.h"
-
-#define WHEELSPEED_L 10
-#define WHEELSPEED_R 10
-#define stepWait 2
-
 
 uint16_t sensorVal[LS_NUM_SENSORS];
 uint16_t sensorCalVal[LS_NUM_SENSORS];
 uint16_t sensorMaxVal[LS_NUM_SENSORS];
 uint16_t sensorMinVal[LS_NUM_SENSORS];
-bool isCalibrationComplete = false;
 
+#define TURNSPEED 10
+#define DRIVESPEED 10
 
 void setup()
 {
   Serial.begin(9600);
-  Serial.println("Initializing...");
 
   setupRSLK();
   /* Left button on Launchpad */
-  setupWaitBtn(LP_RIGHT_BTN);
+  setupWaitBtn(LP_LEFT_BTN);
   /* Red led in rgb led */
   setupLed(RED_LED);
   clearMinMax(sensorMinVal,sensorMaxVal);
   floorCalibration();
-  
 }
+
 
 
 void loop()
 {
+//  uint16_t normalSpeed = 10;
+//  uint16_t fastSpeed = 20;
 
   /* Valid values are either:
    *  DARK_LINE  if your floor is lighter than your line
@@ -38,75 +64,19 @@ void loop()
    */
   uint8_t lineColor = DARK_LINE;
 
-  
-  
-  /* Run this setup only once */
-  /*
-  if(isCalibrationComplete == false) {
-    floorCalibration();
-    isCalibrationComplete = true;
-  }
-  */
 
-  readLineSensor(sensorVal);
-  readCalLineSensor(sensorVal,
-            sensorCalVal,
-            sensorMinVal,
-            sensorMaxVal,
-            lineColor);
+while(finishLine() == false){
 
-  
+lineFollow();
 
-  int ENCODER_DIFF = 0;
-  int OLD_ENC = 0;
-  int l_motor_speed = WHEELSPEED_L;
-  int r_motor_speed = WHEELSPEED_R;
-
-  while(finishLine() == false) {
-
-Serial.println("while loop");
-
-
-    //run the loop as long as no collision is detected
-    
-    int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt(); 
-
-    int avg_totalCount = (l_totalCount + r_totalCount) / 2;
-
-    if ((avg_totalCount - OLD_ENC) > stepWait){
-      uint32_t linePos = getLinePosition(sensorCalVal,lineColor);
-      if (linePos < 3450){
-        ENCODER_DIFF--;}
-      if (linePos > 3550){
-        ENCODER_DIFF++;}
-      }
-    
- 
-    // if right motor is too fast, speed up the left motor and slow the right 
-    if((l_totalCount+ENCODER_DIFF) < r_totalCount) {
-    setMotorSpeed(LEFT_MOTOR, ++l_motor_speed);
-    setMotorSpeed(RIGHT_MOTOR, --l_motor_speed);}
-
-    // if left motor is too fast, speed up the right motor and slow the left
-    if(r_totalCount < (l_totalCount+ENCODER_DIFF)) {
-    setMotorSpeed(RIGHT_MOTOR, ++r_motor_speed);
-    setMotorSpeed(LEFT_MOTOR, --r_motor_speed);}
- 
-    //////// Stop motors if they reach 1 meter ///////////
-    //if (l_totalCount >= num_pulses) disableMotor(LEFT_MOTOR); 
-    //if (r_totalCount >= num_pulses ) disableMotor(RIGHT_MOTOR); 
-  }
 }
 
-bool finishLine(){
-  return false;
-}
 
+}
 void floorCalibration() {
-  Serial.println("test");
   /* Place Robot On Floor (no line) */
   delay(2000);
-  String btnMsg = "Push right button on Launchpad to begin calibration.\n";
+  String btnMsg = "Push left button on Launchpad to begin calibration.\n";
   btnMsg += "Make sure the robot is on the floor away from the line.\n";
   /* Wait until button is pressed to start robot */
   waitBtnPressed(LP_LEFT_BTN,btnMsg,RED_LED);
@@ -141,4 +111,108 @@ void simpleCalibrate() {
 
   /* Disable both motors */
   disableMotor(BOTH_MOTORS);
+}
+
+void lineFollow(){
+
+  uint8_t lineColor = DARK_LINE;
+
+    readLineSensor(sensorVal);
+  readCalLineSensor(sensorVal,
+            sensorCalVal,
+            sensorMinVal,
+            sensorMaxVal,
+            lineColor);
+
+
+
+  uint32_t linePos = getLinePosition(sensorCalVal,lineColor);
+
+  //when robot is centered on the line, scoot forward
+  if ((linePos > 3000) and (linePos < 4000)){
+    lineStraight(1);
+  }
+
+  //when robot is slightly left of center, slight left turn and scoot forward
+  if ((linePos < 3000) and (linePos > 1500)){
+    lineCCWDeg(10);
+    lineStraight(2);
+  }
+
+  //when robot is far left of center, sharper left turn and scoot forward
+  if (linePos < 1500){
+    lineCCWDeg(20);
+    lineStraight(2);
+  }
+
+  //when robot is slightly right of center, slight right turn and scoot forward
+  if ((linePos > 4000) and (linePos < 5500)){
+    lineCCWDeg(10);
+    lineStraight(2);
+  }
+
+  //when robot is far right of center, sharper right turn and scoot forward
+  if (linePos < 1500){
+    lineCCWDeg(20);
+    lineStraight(2);
+  }
+  
+}
+
+void lineCCWDeg(int turnAngle){
+  
+  setMotorDirection(LEFT_MOTOR,MOTOR_DIR_BACKWARD);
+  setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_FORWARD);
+  setMotorSpeed(BOTH_MOTORS,TURNSPEED);
+
+  int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
+  int avg_totalCount = (l_totalCount + r_totalCount) / 2;
+  int turnPulses = (2.00714*(turnAngle*1.00625-3));
+  int OLD_ENC = avg_totalCount;
+  
+  while ((avg_totalCount - OLD_ENC)>turnPulses){
+    int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
+    int avg_totalCount = (l_totalCount + r_totalCount) / 2;
+  }
+
+}
+
+void lineCWDEG(int turnAngle){
+  
+  setMotorDirection(LEFT_MOTOR,MOTOR_DIR_FORWARD);
+  setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_BACKWARD);
+  setMotorSpeed(BOTH_MOTORS,TURNSPEED);
+
+  int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
+  int avg_totalCount = (l_totalCount + r_totalCount) / 2;
+  int turnPulses = (2.00714*(turnAngle*1.00625-3));
+  int OLD_ENC = avg_totalCount;
+  
+  while ((avg_totalCount - OLD_ENC)>turnPulses){
+    int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
+    int avg_totalCount = (l_totalCount + r_totalCount) / 2;
+  }
+  
+}
+
+void lineStraight(int dist){
+
+  setMotorDirection(LEFT_MOTOR,MOTOR_DIR_FORWARD);
+  setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_FORWARD);
+  setMotorSpeed(BOTH_MOTORS,DRIVESPEED);
+
+  int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
+  int avg_totalCount = (l_totalCount + r_totalCount) / 2;
+  int drivePulses = (16.37*dist);
+  int OLD_ENC = avg_totalCount;
+  
+  while ((avg_totalCount - OLD_ENC)>drivePulses){
+    int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
+    int avg_totalCount = (l_totalCount + r_totalCount) / 2;
+  }
+
+}
+
+bool finishLine (){
+  return false;
 }
