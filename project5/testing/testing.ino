@@ -37,7 +37,9 @@ uint16_t sensorMinVal[LS_NUM_SENSORS];
 
 #define WHEELSPEED_L 10
 #define WHEELSPEED_R 10
-#define stepWait 50
+#define lineStepWait 5
+#define steerStepWait 5 
+#define steerTolerance 1
 
 
 void setup()
@@ -110,6 +112,9 @@ void loop()
     isCalibrationComplete = true;
   }
 
+  resetLeftEncoderCnt();  
+  resetRightEncoderCnt();
+
   readLineSensor(sensorVal);
   readCalLineSensor(sensorVal,
             sensorCalVal,
@@ -117,22 +122,18 @@ void loop()
             sensorMaxVal,
             lineColor);
   int ENCODER_DIFF = 0;
-  int OLD_ENC = 0;
+  int OLD_ENC_line = 0;
+  int OLD_ENC_steer = 0;
   int l_motor_speed = WHEELSPEED_L;
   int r_motor_speed = WHEELSPEED_R;
 
   while(finishLine() == false) {
+  //run the loop as long as no finish line is detected
 
 //Serial.println("while loop");
 
-
-
-disableMotor(BOTH_MOTORS);
-
-
-
-
-    //run the loop as long as no finish line is detected
+//toy car mode
+//disableMotor(BOTH_MOTORS);
     
     int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt(); 
 
@@ -141,30 +142,46 @@ disableMotor(BOTH_MOTORS);
     //Serial.println("Encoder cycle count:");
     //Serial.println(avg_totalCount-OLD_ENC);
 
-    if ((avg_totalCount - OLD_ENC) > stepWait){
+    if ((avg_totalCount - OLD_ENC_line) > lineStepWait){
+
+        readLineSensor(sensorVal);
+        readCalLineSensor(sensorVal,
+            sensorCalVal,
+            sensorMinVal,
+            sensorMaxVal,
+            lineColor);
+            
       Serial.println("measuring the position of the line...");
       uint32_t linePos = getLinePosition(sensorCalVal,lineColor);
       Serial.println(linePos);
-      if (linePos < 3450){
+      if (linePos < 2500){
         ENCODER_DIFF--;}
-      if (linePos > 3550){
+      if (linePos > 4500){
         ENCODER_DIFF++;}
-      OLD_ENC = avg_totalCount;
+      OLD_ENC_line = avg_totalCount;
+      Serial.println("Encoder offset:");
       Serial.println(ENCODER_DIFF);
+      Serial.println("Motor speeds Left and Right:");
+      Serial.println(l_motor_speed);
+      Serial.println(r_motor_speed);
+
       }
 
       //Serial.println("Running tally:");
       //Serial.println(OLD_ENC);
+
+    if ((avg_totalCount - OLD_ENC_steer) > steerStepWait){
+
     
- //Serial.println("error correction");
+    //Serial.println("error correction");
     // if right motor is too fast, speed up the left motor and slow the right 
-    if(((l_totalCount + ENCODER_DIFF) < r_totalCount) and (min(l_motor_speed, r_motor_speed) > 0)) {
+    if(((l_totalCount + ENCODER_DIFF+steerTolerance) < r_totalCount) and (min(l_motor_speed, r_motor_speed) > 0)) {
     setMotorSpeed(LEFT_MOTOR, ++l_motor_speed);
     setMotorSpeed(RIGHT_MOTOR, --r_motor_speed);}
 
 
     // if left motor is too fast, speed up the right motor and slow the left
-    if((r_totalCount < (l_totalCount + ENCODER_DIFF)) and (min(l_motor_speed, r_motor_speed) > 0)) {
+    if(((r_totalCount + steerTolerance) < (l_totalCount + ENCODER_DIFF)) and (min(l_motor_speed, r_motor_speed) > 0)) {
     setMotorSpeed(RIGHT_MOTOR, ++r_motor_speed);
     setMotorSpeed(LEFT_MOTOR, --l_motor_speed);}
 
@@ -174,6 +191,9 @@ disableMotor(BOTH_MOTORS);
     //////// Stop motors if they reach 1 meter ///////////
     //if (l_totalCount >= num_pulses) disableMotor(LEFT_MOTOR); 
     //if (r_totalCount >= num_pulses ) disableMotor(RIGHT_MOTOR); 
+
+    OLD_ENC_steer = avg_totalCount;
+    }
   }
 }
 
