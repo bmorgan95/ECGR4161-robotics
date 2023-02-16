@@ -95,8 +95,8 @@ void simpleCalibrate() {
 bool isCalibrationComplete = false;
 void loop()
 {
-  uint16_t normalSpeed = 10;
-  uint16_t fastSpeed = 20;
+//  uint16_t normalSpeed = 10;
+//  uint16_t fastSpeed = 20;
 
   /* Valid values are either:
    *  DARK_LINE  if your floor is lighter than your line
@@ -126,34 +126,50 @@ void loop()
 //Serial.println("while loop");
 
 
-    //run the loop as long as no collision is detected
+
+disableMotor(BOTH_MOTORS);
+
+
+
+
+    //run the loop as long as no finish line is detected
     
     int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt(); 
 
     int avg_totalCount = (l_totalCount + r_totalCount) / 2;
 
+    //Serial.println("Encoder cycle count:");
+    //Serial.println(avg_totalCount-OLD_ENC);
+
     if ((avg_totalCount - OLD_ENC) > stepWait){
+      Serial.println("measuring the position of the line...");
       uint32_t linePos = getLinePosition(sensorCalVal,lineColor);
+      Serial.println(linePos);
       if (linePos < 3450){
         ENCODER_DIFF--;}
       if (linePos > 3550){
         ENCODER_DIFF++;}
-      avg_totalCount = OLD_ENC;
-      //Serial.println(ENCODER_DIFF);
+      OLD_ENC = avg_totalCount;
+      Serial.println(ENCODER_DIFF);
       }
+
+      //Serial.println("Running tally:");
+      //Serial.println(OLD_ENC);
     
  //Serial.println("error correction");
     // if right motor is too fast, speed up the left motor and slow the right 
-    if(((l_totalCount + ENCODER_DIFF) < r_totalCount) and (min(l_totalCount, r_totalCount) > 0)) {
+    if(((l_totalCount + ENCODER_DIFF) < r_totalCount) and (min(l_motor_speed, r_motor_speed) > 0)) {
     setMotorSpeed(LEFT_MOTOR, ++l_motor_speed);
     setMotorSpeed(RIGHT_MOTOR, --r_motor_speed);}
-    Serial.println(l_motor_speed);
+
 
     // if left motor is too fast, speed up the right motor and slow the left
-    if((r_totalCount < (l_totalCount + ENCODER_DIFF)) and (min(l_totalCount, r_totalCount) > 0)) {
+    if((r_totalCount < (l_totalCount + ENCODER_DIFF)) and (min(l_motor_speed, r_motor_speed) > 0)) {
     setMotorSpeed(RIGHT_MOTOR, ++r_motor_speed);
     setMotorSpeed(LEFT_MOTOR, --l_motor_speed);}
-    Serial.println(l_motor_speed);
+
+    //Serial.println(r_motor_speed);
+    //Serial.println(l_motor_speed);
  
     //////// Stop motors if they reach 1 meter ///////////
     //if (l_totalCount >= num_pulses) disableMotor(LEFT_MOTOR); 
