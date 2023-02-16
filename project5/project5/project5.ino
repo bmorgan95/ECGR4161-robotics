@@ -1,32 +1,9 @@
-/*
- * Energia Robot Library for Texas Instruments' Robot System Learning Kit (RSLK)
- * Line Following Example
- *
- * Summary:
- * This example has the TI Robotic System Learning Kit (TI RSLK) follow a line
- * using a basic line following algorithm. This example works on a dark floor with
- * a white line or a light floor with a dark line. The robot first needs to be calibrated
- * Then place the robot on the hit the left button again to begin the line following.
- *
- * How to run:
- * 1) Push left button on Launchpad to have the robot perform calibration.
- * 2) Robot will drive forwards and backwards by a predefined distance.
- * 3) Place the robot center on the line you want it to follow.
- * 4) Push left button again to have the robot begin to follow the line.
- *
- * Parts Info:
- * o Black eletrical tape or white electrical tape. Masking tape does not work well
- *   with IR sensors.
- *
- * Learn more about the classes, variables and functions used in this library by going to:
- * https://fcooper.github.io/Robot-Library/
- *
- * Learn more about the TI RSLK by going to http://www.ti.com/rslk
- *
- * created by Franklin Cooper Jr.
- *
- * This example code is in the public domain.
- */
+//
+//  Bradley Morgan and Jacob Santschi
+//  Intro to Robotics
+//  2-15-2023
+//  LAB 05
+//
 
 #include "SimpleRSLK.h"
 
@@ -43,14 +20,20 @@ bool toyCarMode = false;
 void setup()
 {
   Serial.begin(9600);
+  Serial.println("initializing");
 
   setupRSLK();
   /* Left button on Launchpad */
-  setupWaitBtn(LP_LEFT_BTN);
+  setupWaitBtn(LP_RIGHT_BTN);
   /* Red led in rgb led */
   setupLed(RED_LED);
   clearMinMax(sensorMinVal,sensorMaxVal);
   floorCalibration();
+
+  //reset time and distance measurements
+  resetLeftEncoderCnt();  
+  resetRightEncoderCnt();
+
 }
 
 
@@ -66,6 +49,7 @@ void loop()
    */
   uint8_t lineColor = DARK_LINE;
 
+  int startTime = millis();
 
 while(finishLine(sensorCalVal,lineColor) == false){
 
@@ -77,15 +61,66 @@ lineFollow();
 
 }
 
+int endTime = millis();
+float millPerS = 1000;
+float totalTime = (endTime - startTime) / millPerS;
+
+int avg_totalCount = (getEncoderLeftCnt() + getEncoderRightCnt()) / 2;
+float distCM = avg_totalCount / 16.37022272;
+float distM = distCM / 100;
+float distIN = distCM / 2.54;
+float distF = distIN / 12;
+float speedMS = distM / totalTime;
+float speedMPH = (distF / 5280 * 3600) / totalTime;
+
+while(true){
+  Serial.println("LAB Group 16");
+  Serial.println("The robot travelled...");
+  Serial.print(avg_totalCount);
+  Serial.println(" Motor pulses (wheel average)");
+  Serial.print(distCM);
+  Serial.println(" Centimeters");
+  Serial.print(distM);
+  Serial.println(" Meters");
+  Serial.print(distIN);
+  Serial.println(" Inches");
+  Serial.print(distF);
+  Serial.println(" Feet");
+  Serial.println();
+  Serial.println();
+  Serial.println();
+  Serial.println("It took...");
+  Serial.print(totalTime);
+  Serial.println(" Seconds");
+  Serial.println("For an average speed of...");
+  Serial.print(speedMS);
+  Serial.println(" Meters per Second");
+  Serial.print(speedMPH);
+  Serial.println(" Miles per Hour");
+  Serial.println();
+  Serial.println();
+  Serial.println();
+
+delay(5000);
 
 }
+
+
+}
+////////////////////////////////
+//Function Name: floorCalibration
+//description: robot will drive a short distance forward while scanning the floor without the line to
+//establish a background reflectance level
+//input: none
+//output: void
+/////////////////////////////////
 void floorCalibration() {
   /* Place Robot On Floor (no line) */
   delay(2000);
   String btnMsg = "Push left button on Launchpad to begin calibration.\n";
   btnMsg += "Make sure the robot is on the floor away from the line.\n";
   /* Wait until button is pressed to start robot */
-  waitBtnPressed(LP_LEFT_BTN,btnMsg,RED_LED);
+  waitBtnPressed(LP_RIGHT_BTN,btnMsg,RED_LED);
 
   delay(1000);
 
@@ -96,7 +131,7 @@ void floorCalibration() {
   btnMsg = "Push left button on Launchpad to begin line following.\n";
   btnMsg += "Make sure the robot is on the line.\n";
   /* Wait until button is pressed to start robot */
-  waitBtnPressed(LP_LEFT_BTN,btnMsg,RED_LED);
+  waitBtnPressed(LP_RIGHT_BTN,btnMsg,RED_LED);
   delay(1000);
 
   enableMotor(BOTH_MOTORS);
@@ -119,6 +154,12 @@ void simpleCalibrate() {
   disableMotor(BOTH_MOTORS);
 }
 
+///////////////////////////////////////////
+//Function name: lineFollow
+//description: orchestrates movements and line scanning to make the robot follow the line on the floor.
+//input: none
+//output: void
+////////////////////////////////////////
 void lineFollow(){
 
   uint8_t lineColor = DARK_LINE;
@@ -171,6 +212,12 @@ void lineFollow(){
   
 }
 
+//////////////////////////////////////////////
+//Function name: lineCCWDeg
+//desc: turn robot counterclockwise by specified degrees
+//input: turnAngle
+//output: void
+//////////////////////////////////////////////
 void lineCCWDeg(int turnAngle){
   Serial.println("turning Left");
 
@@ -195,6 +242,12 @@ disableMotor(BOTH_MOTORS);
 
 }
 
+//////////////////////////////////////////////
+//Function name: lineCWDeg
+//desc: turn robot clockwise by specified degrees
+//input: turnAngle
+//output: void
+//////////////////////////////////////////////
 void lineCWDeg(int turnAngle){
   Serial.println("Turning Right");
 
@@ -219,6 +272,12 @@ disableMotor(BOTH_MOTORS);
 
 }
 
+//////////////////////////////////////////////
+//Function name: lineStraight
+//desc: drive robot straight by specified distance in cm
+//input: dist
+//output: void
+//////////////////////////////////////////////
 void lineStraight(int dist){
   Serial.println("driving straight");
 
@@ -241,6 +300,12 @@ disableMotor(BOTH_MOTORS);
 
 }
 
+//////////////////////////////////////////
+//Function name
+//desc: detect finish line, return true or false
+//input: calVal mode
+//output: finish
+//////////////////////////////////////////
 bool finishLine (uint16_t* calVal, uint8_t mode){
 
   bool finish;
@@ -252,7 +317,7 @@ bool finishLine (uint16_t* calVal, uint8_t mode){
   for (uint8_t i = 0; i < LS_NUM_SENSORS; i++)
   {
     uint16_t value = calVal[i];
-    Serial.println(value);
+    //Serial.println(value);
 
     // only average in values that are above a noise threshold
     if (value > 50)
@@ -269,7 +334,7 @@ if (sum > 6000){
   }
 
   else {
-  Serial.println("Not there yet...");
+  //Serial.println("Not there yet...");
   finish = false;
   }
 return finish; 
