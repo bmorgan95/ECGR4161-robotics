@@ -52,6 +52,7 @@ void setup()
   /* Red led in rgb led */
   setupLed(RED_LED);
   clearMinMax(sensorMinVal,sensorMaxVal);
+  
 }
 
 void floorCalibration() {
@@ -110,6 +111,12 @@ void loop()
   if(isCalibrationComplete == false) {
     floorCalibration();
     isCalibrationComplete = true;
+    while(true){
+  uint16_t* left_ls = 0; uint16_t* right_ls = 7;
+  Serial.println("finish line sensors");
+  Serial.println(readLineSensor(left_ls));
+  Serial.println(readLineSensor(right_ls));
+    }
   }
 
   resetLeftEncoderCnt();  
@@ -133,7 +140,7 @@ void loop()
 //Serial.println("while loop");
 
 //toy car mode
-//disableMotor(BOTH_MOTORS);
+disableMotor(BOTH_MOTORS);
     
     int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt(); 
 
@@ -198,5 +205,5 @@ void loop()
 }
 
 bool finishLine(){
-  return false;
+return false;
 }

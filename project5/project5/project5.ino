@@ -69,6 +69,10 @@ while(finishLine() == false){
 
 lineFollow();
 
+delay(100);
+
+Serial.println("loopin the night away");
+
 }
 
 
@@ -127,9 +131,10 @@ void lineFollow(){
 
 
   uint32_t linePos = getLinePosition(sensorCalVal,lineColor);
+  Serial.println(linePos);
 
   //when robot is centered on the line, scoot forward
-  if ((linePos > 3000) and (linePos < 4000)){
+  if ((linePos > 2999) and (linePos < 4001)){
     lineStraight(1);
   }
 
@@ -140,76 +145,94 @@ void lineFollow(){
   }
 
   //when robot is far left of center, sharper left turn and scoot forward
-  if (linePos < 1500){
+  if (linePos < 1501){
     lineCCWDeg(20);
     lineStraight(2);
   }
 
   //when robot is slightly right of center, slight right turn and scoot forward
   if ((linePos > 4000) and (linePos < 5500)){
-    lineCCWDeg(10);
+    lineCWDeg(10);
     lineStraight(2);
   }
 
   //when robot is far right of center, sharper right turn and scoot forward
-  if (linePos < 1500){
-    lineCCWDeg(20);
+  if (linePos > 5499){
+    Serial.println("need to turn right");
+    lineCWDeg(20);
     lineStraight(2);
   }
   
 }
 
 void lineCCWDeg(int turnAngle){
+  Serial.println("turning Left");
+
+
   
   setMotorDirection(LEFT_MOTOR,MOTOR_DIR_BACKWARD);
   setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_FORWARD);
   setMotorSpeed(BOTH_MOTORS,TURNSPEED);
 
+  enableMotor(BOTH_MOTORS);
+
   int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
   int avg_totalCount = (l_totalCount + r_totalCount) / 2;
   int turnPulses = (2.00714*(turnAngle*1.00625-3));
   int OLD_ENC = avg_totalCount;
   
-  while ((avg_totalCount - OLD_ENC)>turnPulses){
-    int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
-    int avg_totalCount = (l_totalCount + r_totalCount) / 2;
+  while (((getEncoderLeftCnt() + getEncoderRightCnt()) / 2 - OLD_ENC) < turnPulses){
+    
   }
+
+disableMotor(BOTH_MOTORS);
 
 }
 
-void lineCWDEG(int turnAngle){
+void lineCWDeg(int turnAngle){
+  Serial.println("Turning Right");
+
+
   
   setMotorDirection(LEFT_MOTOR,MOTOR_DIR_FORWARD);
   setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_BACKWARD);
   setMotorSpeed(BOTH_MOTORS,TURNSPEED);
 
+  enableMotor(BOTH_MOTORS);
+
   int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
   int avg_totalCount = (l_totalCount + r_totalCount) / 2;
   int turnPulses = (2.00714*(turnAngle*1.00625-3));
   int OLD_ENC = avg_totalCount;
   
-  while ((avg_totalCount - OLD_ENC)>turnPulses){
-    int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
-    int avg_totalCount = (l_totalCount + r_totalCount) / 2;
+  while (((getEncoderLeftCnt() + getEncoderRightCnt()) / 2 - OLD_ENC) < turnPulses){
+    
   }
-  
+
+disableMotor(BOTH_MOTORS);
+
 }
 
 void lineStraight(int dist){
+  Serial.println("driving straight");
 
   setMotorDirection(LEFT_MOTOR,MOTOR_DIR_FORWARD);
   setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_FORWARD);
   setMotorSpeed(BOTH_MOTORS,DRIVESPEED);
+
+  enableMotor(BOTH_MOTORS);
+  Serial.println(DRIVESPEED);
 
   int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
   int avg_totalCount = (l_totalCount + r_totalCount) / 2;
   int drivePulses = (16.37*dist);
   int OLD_ENC = avg_totalCount;
   
-  while ((avg_totalCount - OLD_ENC)>drivePulses){
-    int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
-    int avg_totalCount = (l_totalCount + r_totalCount) / 2;
+  while (((getEncoderLeftCnt() + getEncoderRightCnt()) / 2 - OLD_ENC) < drivePulses){
+    
   }
+Serial.println("while loop done");
+disableMotor(BOTH_MOTORS);
 
 }
 
