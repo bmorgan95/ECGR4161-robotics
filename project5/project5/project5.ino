@@ -38,6 +38,8 @@ uint16_t sensorMinVal[LS_NUM_SENSORS];
 #define TURNSPEED 10
 #define DRIVESPEED 10
 
+bool toyCarMode = false;
+
 void setup()
 {
   Serial.begin(9600);
@@ -65,13 +67,13 @@ void loop()
   uint8_t lineColor = DARK_LINE;
 
 
-while(finishLine() == false){
+while(finishLine(sensorCalVal,lineColor) == false){
 
 lineFollow();
 
-delay(100);
+//delay(1000);
 
-Serial.println("loopin the night away");
+//Serial.println("loopin the night away");
 
 }
 
@@ -133,34 +135,38 @@ void lineFollow(){
   uint32_t linePos = getLinePosition(sensorCalVal,lineColor);
   Serial.println(linePos);
 
-  //when robot is centered on the line, scoot forward
-  if ((linePos > 2999) and (linePos < 4001)){
+  //when robot is far left of center, sharper left turn and scoot forward
+  if (linePos < 1501){
+    Serial.println("Big left turn");
+    lineCCWDeg(20);
     lineStraight(1);
   }
 
   //when robot is slightly left of center, slight left turn and scoot forward
-  if ((linePos < 3000) and (linePos > 1500)){
+  if ((linePos > 1500) and (linePos < 3000)){
+    Serial.println("Small feft turn");
     lineCCWDeg(10);
-    lineStraight(2);
+    lineStraight(1);
   }
 
-  //when robot is far left of center, sharper left turn and scoot forward
-  if (linePos < 1501){
-    lineCCWDeg(20);
-    lineStraight(2);
+  //when robot is centered on the line, scoot forward
+  if ((linePos > 2999) and (linePos < 4001)){
+    Serial.println("Forward");
+    lineStraight(1);
   }
 
   //when robot is slightly right of center, slight right turn and scoot forward
   if ((linePos > 4000) and (linePos < 5500)){
+    Serial.println("Small right turn");
     lineCWDeg(10);
-    lineStraight(2);
+    lineStraight(1);
   }
 
   //when robot is far right of center, sharper right turn and scoot forward
   if (linePos > 5499){
-    Serial.println("need to turn right");
+    Serial.println("Big right turn");
     lineCWDeg(20);
-    lineStraight(2);
+    lineStraight(1);
   }
   
 }
@@ -174,7 +180,7 @@ void lineCCWDeg(int turnAngle){
   setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_FORWARD);
   setMotorSpeed(BOTH_MOTORS,TURNSPEED);
 
-  enableMotor(BOTH_MOTORS);
+  if (toyCarMode == false) {enableMotor(BOTH_MOTORS);}
 
   int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
   int avg_totalCount = (l_totalCount + r_totalCount) / 2;
@@ -198,7 +204,7 @@ void lineCWDeg(int turnAngle){
   setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_BACKWARD);
   setMotorSpeed(BOTH_MOTORS,TURNSPEED);
 
-  enableMotor(BOTH_MOTORS);
+  if (toyCarMode == false) {enableMotor(BOTH_MOTORS);}
 
   int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
   int avg_totalCount = (l_totalCount + r_totalCount) / 2;
@@ -220,8 +226,7 @@ void lineStraight(int dist){
   setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_FORWARD);
   setMotorSpeed(BOTH_MOTORS,DRIVESPEED);
 
-  enableMotor(BOTH_MOTORS);
-  Serial.println(DRIVESPEED);
+  if (toyCarMode == false) {enableMotor(BOTH_MOTORS);}
 
   int l_totalCount = getEncoderLeftCnt(); int r_totalCount = getEncoderRightCnt();
   int avg_totalCount = (l_totalCount + r_totalCount) / 2;
@@ -231,11 +236,41 @@ void lineStraight(int dist){
   while (((getEncoderLeftCnt() + getEncoderRightCnt()) / 2 - OLD_ENC) < drivePulses){
     
   }
-Serial.println("while loop done");
+
 disableMotor(BOTH_MOTORS);
 
 }
 
-bool finishLine (){
-  return false;
+bool finishLine (uint16_t* calVal, uint8_t mode){
+
+  bool finish;
+
+  uint32_t avg = 0; // this is for the weighted total
+  uint32_t sum = 0; // this is for the denominator, which is <= 64000
+
+  uint32_t _lastPosition;
+  for (uint8_t i = 0; i < LS_NUM_SENSORS; i++)
+  {
+    uint16_t value = calVal[i];
+    Serial.println(value);
+
+    // only average in values that are above a noise threshold
+    if (value > 50)
+    {
+      sum += (value);
+    }
+  }
+Serial.println();
+Serial.println(sum);
+
+if (sum > 6000){
+  Serial.println("Finish!!!!");
+  finish = true;
+  }
+
+  else {
+  Serial.println("Not there yet...");
+  finish = false;
+  }
+return finish; 
 }
