@@ -20,6 +20,7 @@ void setup() {
   // put your setup code here, to run once:
     setupRSLK();  // Set up all of the pins & functions needed to be used by the TI bot 
     Serial.begin(9600);
+    
 
     /* Left button on Launchpad */
   setupWaitBtn(LP_RIGHT_BTN);
@@ -41,7 +42,7 @@ void loop() {
   delay(3000);
   rotateCWDegrees(180);
   delay(1000);
-  driveStraight(pulses);
+  driveStraight(pulses+8);
   delay(1000);
   rotateCWDegrees(180);
 
