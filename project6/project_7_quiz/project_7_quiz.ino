@@ -15,22 +15,30 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly: 
 
-  float dist = normalizedDist();
+  float normalized = normalizedDist();
+
+  Serial.print("Normalized Distance = ");
+  Serial.print(normalized);
+  Serial.println(" inches.");
+  delay(2000);
 
 }
 
 float normalizedDist(){
-  int numScans = 5;
+  int numScans = 9;
   float values[numScans];
   for (int i = 0; i < numScans; i++){
     float scan = getDistance();
-    float values[i] = {scan};
+    //Serial.println(scan);
+    values[i] = {scan};
     //Serial.println(values[i]);
   }
 
-  Serial.print("Normalized Distance = ");
-  Serial.print(findMedian(values, numScans));
-  Serial.println(" inches.");
+  for(int k = 0; k < numScans; k++)
+{
+  //Serial.println(values[k]);
+  //Serial.println(numScans);
+}
   
 
   float median = findMedian(values, numScans);
@@ -38,6 +46,8 @@ float normalizedDist(){
 }
 
 float findMedian(float values[], int numScans){
+
+
 
     // bubble sort the array
     for (int i = 0; i < numScans - 1; i++) {
@@ -54,8 +64,9 @@ float findMedian(float values[], int numScans){
 for(int k = 0; k < numScans; k++)
 {
   Serial.println(values[k]);
-  Serial.println(numScans);
+  //Serial.println(numScans);
 }
+
         //return array median
         return (float)values[numScans/2];
 
