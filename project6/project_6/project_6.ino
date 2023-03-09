@@ -18,7 +18,8 @@ void setup() {
   Serial.begin (9600);
   setupRSLK();
   pinMode(trigPin, OUTPUT);   //the trigger pin will output pulses of electricity 
-  pinMode(echoPin, INPUT);    //the echo pin will measure the duration of pulses coming back from the distance sensor
+  pinMode(echoPin, INPUT);    //the echo pin will measure the duration of 
+                              //pulses coming back from the distance sensor
   pinMode(LP_LEFT_BTN, INPUT_PULLUP);
   pinMode(LP_RIGHT_BTN, INPUT_PULLUP);
 }
@@ -87,7 +88,7 @@ if (digitalRead(LP_LEFT_BTN) == LOW){     //shape 2a
     
   }
 
-  if (back[0] == 1){
+  if (back[0] == 1){              //backtrack through the shape back to starting point
     Serial.println("Backtracking...");
     Serial.print("first leg is ");
     Serial.print(back[1]);
@@ -128,6 +129,14 @@ if (digitalRead(LP_LEFT_BTN) == LOW){     //shape 2a
 
 }
 
+
+/////////////////////////////////////////////
+//function name: normalizedDist
+//description: collects a defined number of distance measurements,
+//             and returns the median
+//inputs: none
+//outputs: float
+///////////////////////////////////////////////
 float normalizedDist(){
   int numScans = 13;
   float values[numScans];
@@ -148,6 +157,15 @@ float normalizedDist(){
   return median;
 }
 
+
+
+////////////////////////////////////////////////
+//function name: findMedian
+//description: takes an array of data, sorts it using a bubble sort,
+//             and returns the median.
+//inputs: float array
+//outputs: float
+////////////////////////////////////////////////
 float findMedian(float values[], int numScans){
 
 
@@ -175,6 +193,14 @@ for(int k = 0; k < numScans; k++)
 
 }
 
+
+//////////////////////////////////////////////
+//function: getDistance
+//description: uses the ultrasonic sensor to take a single distance reading
+//inputs: none
+//outputs: float
+//FUNCTION BORROWED FROM EXAMPLE CODE
+//////////////////////////////////////////////
 float getDistance() {
 
 
