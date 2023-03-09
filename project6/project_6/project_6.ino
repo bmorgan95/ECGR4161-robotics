@@ -151,24 +151,6 @@ float normalizedDist(){
   //Serial.println(values[k]);
   //Serial.println(numScans);
 //}
-  
-
-  float median = findMedian(values, numScans);
-  return median;
-}
-
-
-
-////////////////////////////////////////////////
-//function name: findMedian
-//description: takes an array of data, sorts it using a bubble sort,
-//             and returns the median.
-//inputs: float array
-//outputs: float
-////////////////////////////////////////////////
-float findMedian(float values[], int numScans){
-
-
 
     // bubble sort the array
     for (int i = 0; i < numScans - 1; i++) {
@@ -192,6 +174,47 @@ for(int k = 0; k < numScans; k++)
         return (float)values[numScans/2];
 
 }
+  
+
+//  float median = findMedian(values, numScans);
+//  return median;
+//}
+
+
+
+////////////////////////////////////////////////
+//function name: findMedian
+//description: takes an array of data, sorts it using a bubble sort,
+//             and returns the median.
+//inputs: float array
+//outputs: float
+////////////////////////////////////////////////
+//float findMedian(float values[], int numScans){
+//
+//
+//
+//    // bubble sort the array
+//    for (int i = 0; i < numScans - 1; i++) {
+//        for (int j = 0; j < numScans - i - 1; j++) {
+//            if (values[j] > values[j+1]) {
+//                // swap values[j] and values[j+1]
+//                float temp = values[j];
+//                values[j] = values[j+1];
+//                values[j+1] = temp;
+//            }
+//        }
+//    }
+//
+//for(int k = 0; k < numScans; k++)
+//{
+//  //Serial.println(values[k]);
+//  //Serial.println(numScans);
+//}
+//
+//        //return array median
+//        return (float)values[numScans/2];
+//
+//}
 
 
 //////////////////////////////////////////////
@@ -271,8 +294,8 @@ void driveStraight (int speedLeft, int speedRight, int distCM, int shape, int ba
   setRawMotorSpeed(RIGHT_MOTOR, r_motor_speed);        //   may change (adjust) later 
  
   while( (l_totalCount< num_pulses ) || (r_totalCount< num_pulses )) {
-    digitalWrite(RED_LED, LOW);
-    digitalWrite(BLUE_LED, LOW);
+    //digitalWrite(RED_LED, LOW);
+    //digitalWrite(BLUE_LED, LOW);
 
     //run the loop as long as either wheel has travelled
     //fewer than the required number of pulses
@@ -291,7 +314,7 @@ void driveStraight (int speedLeft, int speedRight, int distCM, int shape, int ba
         if((l_totalCount+ENCODER_DIFF) < r_totalCount) {
         setRawMotorSpeed(LEFT_MOTOR, l_motor_speed + 8);
         setRawMotorSpeed(RIGHT_MOTOR, r_motor_speed - 8);
-        digitalWrite(RED_LED, HIGH);
+        //digitalWrite(RED_LED, HIGH);
         steering = "right";
         }
 
@@ -299,7 +322,7 @@ void driveStraight (int speedLeft, int speedRight, int distCM, int shape, int ba
         else if((r_totalCount+ENCODER_DIFF) < l_totalCount) {
         setRawMotorSpeed(RIGHT_MOTOR, r_motor_speed + 8);
         setRawMotorSpeed(LEFT_MOTOR, l_motor_speed - 8);
-        digitalWrite(BLUE_LED, HIGH);
+        //digitalWrite(BLUE_LED, HIGH);
         steering = "left";
         }
 
@@ -324,7 +347,7 @@ void driveStraight (int speedLeft, int speedRight, int distCM, int shape, int ba
     if (shape == 1 and normalizedDist() <= 21){
       
       allStop();
-      while(normalizedDist() <= 17){
+      while(normalizedDist() <= 25){
           digitalWrite(RED_LED, HIGH);
           //delay(500);
       }
@@ -340,7 +363,7 @@ void driveStraight (int speedLeft, int speedRight, int distCM, int shape, int ba
         digitalWrite(RED_LED, HIGH);
         delay(5000);
         digitalWrite(RED_LED, LOW);
-        delay(500);
+        delay(100);
         back[0] = 1;
         back[1] = avg_totalCount / PULSES_1CM;
         break;
@@ -351,8 +374,8 @@ void driveStraight (int speedLeft, int speedRight, int distCM, int shape, int ba
     
   } 
   //delay(200);
-  digitalWrite(RED_LED, LOW);
-  digitalWrite(BLUE_LED, LOW);
+  //digitalWrite(RED_LED, LOW);
+  //digitalWrite(BLUE_LED, LOW);
 
 }
 
