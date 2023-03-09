@@ -29,9 +29,10 @@ float normalizedDist(){
   float values[numScans];
   for (int i = 0; i < numScans; i++){
     float scan = getDistance();
-    //Serial.println(scan);
+    while (scan = 0){
+      float scan = getDistance();
+    }
     values[i] = {scan};
-    //Serial.println(values[i]);
   }
 
   for(int k = 0; k < numScans; k++)
