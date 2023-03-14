@@ -344,7 +344,7 @@ void driveStraight (int speedLeft, int speedRight, int distCM, int shape, int ba
     //Serial.println(r_totalCount);
     //Serial.println(old_count);
 
-    if (shape == 1 and normalizedDist() <= 21){
+    if (shape == 1 and normalizedDist() <= 19.5){
       
       allStop();
       while(normalizedDist() <= 25){
@@ -357,7 +357,7 @@ void driveStraight (int speedLeft, int speedRight, int distCM, int shape, int ba
       
     }
 
-    if (shape == 2 and normalizedDist() <= 21){
+    if (shape == 2 and normalizedDist() <= 19.5){
 
         allStop();
         digitalWrite(RED_LED, HIGH);
