@@ -22,6 +22,10 @@ void setup() {
                               //pulses coming back from the distance sensor
   pinMode(LP_LEFT_BTN, INPUT_PULLUP);
   pinMode(LP_RIGHT_BTN, INPUT_PULLUP);
+  while(1){
+    Serial.println(getDistance());
+    delay(50);
+  }
 }
 
 void loop() {

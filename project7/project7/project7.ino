@@ -31,15 +31,57 @@ void loop() {
   float dist;
 
   while (digitalRead(LP_LEFT_BTN) == HIGH){
-//    normalizedDist();
-//    Serial.println();
-//    Serial.println();
-//    Serial.println();
-//    Serial.println();
-//    Serial.println();
-    Serial.println(normalizedDist());
-    //Serial.println(getDistance());
-    //delay(2000);
+
+    dist = getDistance();
+    Serial.println(dist);
+        if(dist < 75){
+          digitalWrite(RED_LED, HIGH);
+          digitalWrite(GREEN_LED, LOW);
+          digitalWrite(BLUE_LED, LOW);
+          
+        }
+        else if(dist>=75 && dist<110){
+          digitalWrite(RED_LED, LOW);
+          digitalWrite(GREEN_LED, HIGH);
+          digitalWrite(BLUE_LED, LOW);
+          
+        }
+        else{
+          digitalWrite(RED_LED, LOW);
+          digitalWrite(GREEN_LED, LOW);
+          digitalWrite(BLUE_LED, HIGH);
+          
+        }
+
+     delay(100);   
+  }
+
+  delay(5000);
+
+    while (digitalRead(LP_LEFT_BTN) == HIGH){
+
+    dist = normalizedDist();
+    Serial.println(dist);
+        if(dist < 75){
+          digitalWrite(RED_LED, HIGH);
+          digitalWrite(GREEN_LED, LOW);
+          digitalWrite(BLUE_LED, LOW);
+          
+        }
+        else if(dist>=75 && dist<110){
+          digitalWrite(RED_LED, LOW);
+          digitalWrite(GREEN_LED, HIGH);
+          digitalWrite(BLUE_LED, LOW);
+          
+        }
+        else{
+          digitalWrite(RED_LED, LOW);
+          digitalWrite(GREEN_LED, LOW);
+          digitalWrite(BLUE_LED, HIGH);
+          
+        }
+
+     delay(100);   
   }
 
   for(int s=0; s<=2; s++){
@@ -50,16 +92,16 @@ void loop() {
   }
 
   //float dist[];
-    for (int i=0; i<=11; i++){
+    for (int i=0; i<=5; i++){
       for(int j=0; j<=19; j++){
-        dist = normalizedDist();
-        if(dist < 60){
+        dist = getDistance();
+        if(dist < 75){
           digitalWrite(RED_LED, HIGH);
           digitalWrite(GREEN_LED, LOW);
           digitalWrite(BLUE_LED, LOW);
           
         }
-        else if(dist>=60 && dist<100){
+        else if(dist>=75 && dist<110){
           digitalWrite(RED_LED, LOW);
           digitalWrite(GREEN_LED, HIGH);
           digitalWrite(BLUE_LED, LOW);
@@ -72,7 +114,7 @@ void loop() {
           
         }
         scans[(i*10 + j)] = {dist};
-        rotateDegrees(3, "CW", 15, 15, 1);
+        rotateDegrees(3, "CW", 15, 15, 1.5);
         delay(50);
         }
       
@@ -113,11 +155,11 @@ void loop() {
 //outputs: float
 ///////////////////////////////////////////////
 float normalizedDist(){
-  int numScans = 51;
+  int numScans = 15;
   float values[numScans];
   for (int i = 0; i < numScans; i++){
-    float scan = getDistance();
-    values[i] = {scan};
+    values[i] = {getDistance()};
+    delay(50);
   }
 
     // bubble sort the array
@@ -131,16 +173,9 @@ float normalizedDist(){
             }
         }
     }
-
-for(int k = 0; k < numScans; k++)
-{
-  //Serial.println(values[k]);
-  //Serial.println(numScans);
-}
-
+ 
         //return array median
         return (float)values[numScans/2];
-
 }
 
 
