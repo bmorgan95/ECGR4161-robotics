@@ -20,70 +20,17 @@ void setup() {
   pinMode(LP_LEFT_BTN, INPUT_PULLUP);
   pinMode(LP_RIGHT_BTN, INPUT_PULLUP);
 
-
-
+  resetLeftEncoderCnt();  
+  resetRightEncoderCnt();
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  float scans[60];
-  float dist;
 
-  while (digitalRead(LP_LEFT_BTN) == HIGH){
+if (digitalRead(LP_LEFT_BTN) == LOW){
 
-    dist = getDistance();
-    Serial.println(dist);
-        if(dist < 75){
-          digitalWrite(RED_LED, HIGH);
-          digitalWrite(GREEN_LED, LOW);
-          digitalWrite(BLUE_LED, LOW);
-          
-        }
-        else if(dist>=75 && dist<110){
-          digitalWrite(RED_LED, LOW);
-          digitalWrite(GREEN_LED, HIGH);
-          digitalWrite(BLUE_LED, LOW);
-          
-        }
-        else{
-          digitalWrite(RED_LED, LOW);
-          digitalWrite(GREEN_LED, LOW);
-          digitalWrite(BLUE_LED, HIGH);
-          
-        }
-
-     delay(100);   
-  }
-
-  delay(5000);
-
-    while (digitalRead(LP_LEFT_BTN) == HIGH){
-
-    dist = normalizedDist();
-    Serial.println(dist);
-        if(dist < 75){
-          digitalWrite(RED_LED, HIGH);
-          digitalWrite(GREEN_LED, LOW);
-          digitalWrite(BLUE_LED, LOW);
-          
-        }
-        else if(dist>=75 && dist<110){
-          digitalWrite(RED_LED, LOW);
-          digitalWrite(GREEN_LED, HIGH);
-          digitalWrite(BLUE_LED, LOW);
-          
-        }
-        else{
-          digitalWrite(RED_LED, LOW);
-          digitalWrite(GREEN_LED, LOW);
-          digitalWrite(BLUE_LED, HIGH);
-          
-        }
-
-     delay(100);   
-  }
-
+  //countdown
   for(int s=0; s<=2; s++){
   digitalWrite(BLUE_LED, HIGH);
   delay(500);
@@ -91,61 +38,12 @@ void loop() {
   delay(500);
   }
 
-  //float dist[];
-    for (int i=0; i<=5; i++){
-      for(int j=0; j<=19; j++){
-        dist = getDistance();
-        if(dist < 75){
-          digitalWrite(RED_LED, HIGH);
-          digitalWrite(GREEN_LED, LOW);
-          digitalWrite(BLUE_LED, LOW);
-          
-        }
-        else if(dist>=75 && dist<110){
-          digitalWrite(RED_LED, LOW);
-          digitalWrite(GREEN_LED, HIGH);
-          digitalWrite(BLUE_LED, LOW);
-          
-        }
-        else{
-          digitalWrite(RED_LED, LOW);
-          digitalWrite(GREEN_LED, LOW);
-          digitalWrite(BLUE_LED, HIGH);
-          
-        }
-        scans[(i*10 + j)] = {dist};
-        rotateDegrees(3, "CW", 15, 15, 1.5);
-        delay(50);
-        }
-      
-    }
+  //off and running
+  escapeArena();
 
-          digitalWrite(RED_LED, LOW);
-          digitalWrite(GREEN_LED, LOW);
-          digitalWrite(BLUE_LED, LOW);
-          
 
-      while(1){
-        for (int i=0; i<=5; i++){
-        for(int j=0; j<=19; j++){
-        Serial.print(scans[(i*10 + j)]);
-        Serial.print("    ");
-        }
-        Serial.println();
-        }
-        Serial.println();
-        Serial.println();
-        Serial.println();
-        Serial.println();
-        Serial.println();
-        Serial.println();
-        Serial.println();
-        
-        delay(10000);
-      }
-  
 }
-
+}
 
 /////////////////////////////////////////////
 //function name: normalizedDist
@@ -155,10 +53,34 @@ void loop() {
 //outputs: float
 ///////////////////////////////////////////////
 float normalizedDist(){
-  int numScans = 15;
+  int numScans = 7;
   float values[numScans];
   for (int i = 0; i < numScans; i++){
-    values[i] = {getDistance()};
+
+  float echoTime;            //variable to store the time it takes for a ping to bounce off an object
+  float calculatedDistanceInches;      //variable to store the distance calculated from the echo time
+  float calculatedDistanceCentimeters; //variable to store the distance calculated from the echo time
+
+
+  //send out an ultrasonic pulse that's 10ms long
+  digitalWrite(trigPin, LOW); //ensures a clean pulse beforehand
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10); 
+  digitalWrite(trigPin, LOW);
+
+  echoTime = pulseIn(echoPin, HIGH);      //use the pulsein command to see how long it takes for the
+                                          //pulse to bounce back to the sensor in microseconds
+  //calculate the distance in inches of the object 
+  //that reflected the pulse (half the bounce time multiplied by the speed of sound)
+  calculatedDistanceInches = echoTime / 148.0;  
+  //calculate the distance in centimeters of the object that 
+  //reflected the pulse (half the bounce time multiplied by the speed of sound)
+  calculatedDistanceCentimeters = echoTime / 58.0;  
+  //Serial.println(calculatedDistanceInches);
+  
+  values[i] = calculatedDistanceCentimeters;
+  
     delay(50);
   }
 
@@ -176,40 +98,6 @@ float normalizedDist(){
  
         //return array median
         return (float)values[numScans/2];
-}
-
-
-//////////////////////////////////////////////
-//function: getDistance
-//description: uses the ultrasonic sensor to take a single distance reading
-//inputs: none
-//outputs: float
-//FUNCTION BORROWED FROM EXAMPLE CODE
-//////////////////////////////////////////////
-float getDistance() {
-
-
-  float echoTime;                   //variable to store the time it takes for a ping to bounce off an object
-  float calculatedDistanceInches;         //variable to store the distance calculated from the echo time
-  float calculatedDistanceCentimeters;         //variable to store the distance calculated from the echo time
-
-
-  //send out an ultrasonic pulse that's 10ms long
-  digitalWrite(trigPin, LOW); //ensures a clean pulse beforehand
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10); 
-  digitalWrite(trigPin, LOW);
-
-  echoTime = pulseIn(echoPin, HIGH);      //use the pulsein command to see how long it takes for the
-                                          //pulse to bounce back to the sensor in microseconds
-
-  calculatedDistanceInches = echoTime / 148.0;  //calculate the distance in inches of the object that reflected the pulse (half the bounce time multiplied by the speed of sound)
-  calculatedDistanceCentimeters = echoTime / 58.0;  //calculate the distance in centimeters of the object that reflected the pulse (half the bounce time multiplied by the speed of sound)
-
-  //Serial.println(calculatedDistanceInches);
-  
-  return calculatedDistanceCentimeters;              //send back the distance that was calculated
 }
 
 
@@ -238,21 +126,18 @@ void allStop(){
 //ROBOT IS ASSUMED TO BE AT REST WHEN THIS FUNCTION IS CALLED
 /////////////////////////////////////////////////////////////
 void rotateDegrees (int turnAngle, String direction, int speedLeft, int speedRight, float overshoot){
-  Serial.println("turn function starts...");
 
   // Define speed and encoder count variables 
-  int l_totalCount = 0; 
-  int r_totalCount = 0;
-  String steering = "center";
+  int l_oldCount = getEncoderLeftCnt(); 
+  int r_oldCount = getEncoderRightCnt();
 
-  resetLeftEncoderCnt();  
-  resetRightEncoderCnt();
-
+  //set motor directions for clockwise turning
   if(direction == "CW"){
   setMotorDirection(LEFT_MOTOR, MOTOR_DIR_FORWARD);
   setMotorDirection(RIGHT_MOTOR, MOTOR_DIR_BACKWARD);
   }
 
+  //set motor directions for counter-clockwise turning
   if(direction == "CCW"){
   setMotorDirection(LEFT_MOTOR, MOTOR_DIR_BACKWARD);
   setMotorDirection(RIGHT_MOTOR, MOTOR_DIR_FORWARD);
@@ -260,7 +145,6 @@ void rotateDegrees (int turnAngle, String direction, int speedLeft, int speedRig
 
   //14.05*pi cm per 1 degree of robot turn, 
   int turnPulses = (2.00714*(turnAngle*1.00625-overshoot)); 
-  Serial.println(turnPulses);
   //compensate for measurement error and stoppage rollover
 
   setRawMotorSpeed(LEFT_MOTOR, speedLeft);         // Set motor speeds - variable,  
@@ -268,44 +152,36 @@ void rotateDegrees (int turnAngle, String direction, int speedLeft, int speedRig
   enableMotor(BOTH_MOTORS);                         // "Turn on" the motor  
 
 
-  while((l_totalCount< turnPulses ) or (r_totalCount< turnPulses )) {
-
-    Serial.println("steering loop");
-
-    l_totalCount = getEncoderLeftCnt();
-    r_totalCount = getEncoderRightCnt();
-    //digitalWrite(RED_LED, LOW);
-    //digitalWrite(BLUE_LED, LOW);
- 
     // if right motor is too fast, speed up the left motor and slow the right 
-    if((l_totalCount+ENCODER_DIFF) < r_totalCount) {
+    while((getEncoderLeftCnt() < turnPulses + l_oldCount) or (getEncoderRightCnt()< turnPulses + r_oldCount)) {
+    if((getEncoderLeftCnt()+ENCODER_DIFF) < getEncoderRightCnt()) {
     setRawMotorSpeed(LEFT_MOTOR, speedLeft + 2);
     setRawMotorSpeed(RIGHT_MOTOR, speedRight - 2);
     //digitalWrite(RED_LED, HIGH);
-    steering = "right";
     }
 
     // if left motor is too fast, speed up the right motor and slow the left
-    else if((r_totalCount+ENCODER_DIFF) < l_totalCount) {
+    else if((getEncoderRightCnt()+ENCODER_DIFF) < getEncoderLeftCnt()) {
     setRawMotorSpeed(RIGHT_MOTOR, speedRight + 2);
     setRawMotorSpeed(LEFT_MOTOR, speedLeft - 2);
     //digitalWrite(BLUE_LED, HIGH);
-    steering = "left";
     }
 
     // if encoders are equal to within allowed offset, set motors to default speed
     else{
     setRawMotorSpeed(RIGHT_MOTOR, speedRight);
     setRawMotorSpeed(LEFT_MOTOR, speedLeft);
-    steering = "center";
     }
 
-
     // Stop motors if they reach requisite pulses 
-    if (l_totalCount >= turnPulses) disableMotor(LEFT_MOTOR); 
-    if (r_totalCount >= turnPulses ) disableMotor(RIGHT_MOTOR);
+    if (getEncoderLeftCnt() >= turnPulses + l_oldCount) disableMotor(LEFT_MOTOR); 
+    if (getEncoderRightCnt() >= turnPulses + r_oldCount) disableMotor(RIGHT_MOTOR);
 
   }
+
+  //just in case, stop both motors after loop exits
+  disableMotor(LEFT_MOTOR); 
+  disableMotor(RIGHT_MOTOR);
 
 }
 
@@ -321,59 +197,172 @@ void driveStraight (int speedLeft, int speedRight, int distCM, float overshoot) 
  
   // Define speed and encoder count variables 
 
-  int l_totalCount = 0; 
-  int r_totalCount = 0; 
+  int l_oldCount = getEncoderLeftCnt(); 
+  int r_oldCount = getEncoderRightCnt(); 
   int old_count = 0;
   String steering = "center";
   //uint16_t num_pulses = 0; 
  
   // compute the number of pulses for drivecm centimeters 
-  int  num_pulses = (uint16_t) (((float)(distCM - overshoot) * PULSES_1CM) + 0.5); 
- 
-  resetLeftEncoderCnt();  
-  resetRightEncoderCnt();   // Set encoder pulse count back to 0  
+  int  num_pulses = (int) (((distCM - overshoot) * PULSES_1CM) + 0.5); 
+
   setMotorDirection(BOTH_MOTORS,MOTOR_DIR_FORWARD); // Cause the robot to drive forward  
   setRawMotorSpeed(LEFT_MOTOR, speedLeft);         // Set motor speeds - variable,  
   setRawMotorSpeed(RIGHT_MOTOR, speedRight);        //   may change (adjust) later 
   enableMotor(BOTH_MOTORS);                         // "Turn on" the motor  
  
-  while( (l_totalCount< num_pulses ) || (r_totalCount< num_pulses )) {
+  while((getEncoderLeftCnt() < num_pulses + l_oldCount) || (getEncoderRightCnt() < num_pulses + r_oldCount)) {
     digitalWrite(RED_LED, LOW);
     digitalWrite(BLUE_LED, LOW);
 
     //run the loop as long as either wheel has travelled
     //fewer than the required number of pulses
 
-    l_totalCount = getEncoderLeftCnt(); r_totalCount = getEncoderRightCnt(); 
-    int avg_totalCount = (l_totalCount + r_totalCount) / 2;
-    
-   
         // if right motor is too fast, speed up the left motor and slow the right 
-        if((l_totalCount+ENCODER_DIFF) < r_totalCount) {
+        if((getEncoderLeftCnt()+ENCODER_DIFF) < getEncoderRightCnt()) {
         setRawMotorSpeed(LEFT_MOTOR, speedLeft + 2);
         setRawMotorSpeed(RIGHT_MOTOR, speedRight - 2);
         digitalWrite(RED_LED, HIGH);
-        steering = "right";
         }
 
         // if left motor is too fast, speed up the right motor and slow the left
-        else if((r_totalCount+ENCODER_DIFF) < l_totalCount) {
+        else if((getEncoderRightCnt()+ENCODER_DIFF) < getEncoderLeftCnt()) {
         setRawMotorSpeed(RIGHT_MOTOR, speedRight + 2);
         setRawMotorSpeed(LEFT_MOTOR, speedLeft - 2);
         digitalWrite(BLUE_LED, HIGH);
-        steering = "left";
         }
 
         // if encoders are equal to within allowed offset, set motors to default speed
         else{
         setRawMotorSpeed(RIGHT_MOTOR, speedRight);
         setRawMotorSpeed(LEFT_MOTOR, speedLeft);
-        steering = "center";
         }
 
         // Stop motors if they reach requisite pulses 
-        if (l_totalCount >= num_pulses) disableMotor(LEFT_MOTOR); 
-        if (r_totalCount >= num_pulses ) disableMotor(RIGHT_MOTOR);
+        if ((getEncoderLeftCnt() - l_oldCount) >= num_pulses) disableMotor(LEFT_MOTOR); 
+        if (getEncoderRightCnt() - r_oldCount >= num_pulses ) disableMotor(RIGHT_MOTOR);
   }
+
+  disableMotor(LEFT_MOTOR); 
+  disableMotor(RIGHT_MOTOR);
+
+}
+
+
+////////////////////////////////////////
+//function: escapeArena
+//inputs: none
+//outputs: void
+//description: rotates until robot can see past obstacles, then completes one 
+//full circular sweep to ensure 2 consecutive edge detections.
+// then rotates to face the average of the two angles, and drives straight out.
+////////////////////////////////////////
+
+void escapeArena(){;
+
+  int angles[1];
+
+  //das blinken lightsen
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(BLUE_LED, LOW);
+  digitalWrite(GREEN_LED, LOW);
+
+  //if robot begins pointing at obstacle, rotate until robot can see past it.
+  while (normalizedDist() <= 75){
+
+      //das blinken lightsen indicator
+      digitalWrite(RED_LED, HIGH);
+      digitalWrite(BLUE_LED, LOW);
+      digitalWrite(GREEN_LED, LOW);
+  
+    //scooch 3 degrees clockwise
+    rotateDegrees(3, "CW", 15, 15, 0);
+  }
+
+  //reset encoder counts, establishing "origin" away from obstacles
+  resetLeftEncoderCnt();  
+  resetRightEncoderCnt();
+
+
+  //rotate until robot detects leading edge of first obstacle
+  while(normalizedDist() > 75){
+
+      //das blinken lightsen indicator
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(BLUE_LED, LOW);
+      digitalWrite(GREEN_LED, HIGH);
+    
+    rotateDegrees(3, "CW", 15, 15, 0);
+  }
+
+  //save angular position of leading edge in pulses
+  angles[0] = {getEncoderLeftCnt()};
+
+  //rotate until robot detects trailing edge of second object
+  while(normalizedDist() <= 75){
+
+      //das blinken lightsen indicator
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(BLUE_LED, HIGH);
+      digitalWrite(GREEN_LED, LOW);
+    
+    
+    rotateDegrees(3, "CW", 15, 15, 0);
+  }
+
+  //save angular position of second object in pulses
+  angles[1] = {getEncoderLeftCnt()};
+
+  //rotate through the rest of the complete circle if it isn't already achieved
+  while(getEncoderLeftCnt() < 720){
+
+      //das blinken lightsen indicator
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(BLUE_LED, LOW);
+      digitalWrite(GREEN_LED, HIGH);
+    
+    
+    rotateDegrees(3, "CW", 15, 15, 0);
+  }
+
+      //das blinken lightsen indicator
+      digitalWrite(RED_LED, LOW);
+      digitalWrite(BLUE_LED, LOW);
+      digitalWrite(GREEN_LED, LOW);
+    
+  allStop();
+
+  delay(4000);
+
+  //robot needs to rotate through the difference between the total distance travelled,
+  //and the average of the two found angles
+  int rotateTarget = (getEncoderLeftCnt() - ((angles[1] + angles[0]) / 2));
+
+  //reset origin to current orientation
+  resetLeftEncoderCnt();  
+  resetRightEncoderCnt();
+
+  //stepwise rotate back to escape route
+  while (getEncoderLeftCnt() < rotateTarget){
+  rotateDegrees(1, "CCW", 15, 15, 0);
+  }
+
+  //das blinken lightsen indicator
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(BLUE_LED, LOW);
+  digitalWrite(GREEN_LED, HIGH);
+
+  delay(2000);
+
+  //das blinken lightsen indicator
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(BLUE_LED, LOW);
+  digitalWrite(GREEN_LED, LOW);
+
+  //bat outta hell
+  driveStraight(31, 30, 125, 0);
+  
+
+  
 
 }
