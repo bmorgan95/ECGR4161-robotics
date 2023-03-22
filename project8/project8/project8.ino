@@ -268,9 +268,12 @@ void escapeHallway(){;
 
 int steps[1];
 
+//scan, scan, drive 6 times.
 for (int i=0; i<=6; i++){
   for (int j=0; j<=180; j=j+180){
     myservo.write(j);
+
+    //when an exit is detected, save the linear and angular location relative to the starting position
     if(normalizedDist() > 30){
       steps[0] = i;
       steps[1] = j;
@@ -292,12 +295,15 @@ for (int i=0; i<=6; i++){
     
   }
 
+  //return servo to forward position
   myservo.write(90);
+
+  //only deive straight if robot is not already at end of hall
   if(i<6){
   driveStraight(31, 30, 30.5, 2);
   }
   
 }
-
+//begin navigating to exit
 
 }
