@@ -27,7 +27,7 @@ void setup() {
   resetRightEncoderCnt();
 
   myservo.attach(38);   // attaches the servo on Port 2.4 (P2.4 or pin 38)to the servo object
-  myservo.write(90);     // Send it to the center position
+  myservo.write(85);     // Send it to the center position
 
 }
 
@@ -254,6 +254,34 @@ void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot
 
 }
 
+///////////////////////////////////////
+//function: servoSweep
+//description: Moves a servo from a specified start point to a specified end point.
+//             User can specifiy degree incrememntation.
+//input: int startDeg, int endDeg, int incDeg. 
+//output: void
+///////////////////////////////////////
+
+void servoSweep(int startDeg, int endDeg, int incDeg) {
+
+  if(startDeg < endDeg){
+    for(int pos=startDeg; pos<=endDeg; pos+=incDeg) {
+      myservo.write(pos);                           // tell servo to go to position in variable 'pos'
+      Serial.print("Servo Position: ");             // Print servo position to serial monitor
+      Serial.println(pos);
+      delay(17);                                    // waits for the servo to reach the position
+    }
+  }
+  
+  if(startDeg > endDeg){
+    for(int pos=startDeg; pos>=endDeg; pos-=incDeg) {
+      myservo.write(pos);                           // tell servo to go to position in variable 'pos'
+      Serial.print("Servo Position: ");             // Print servo position to serial monitor
+      Serial.println(pos);
+      delay(17);                                    // waits for the servo to reach the position
+    }
+  }
+}
 
 ////////////////////////////////////////
 //function: escapeHallway
@@ -270,8 +298,12 @@ int steps[1];
 
 //scan, scan, drive 6 times.
 for (int i=0; i<=6; i++){
-  for (int j=0; j<=180; j=j+180){
-    myservo.write(j);
+  for (int j=0, k=90; j<=180; j=j+180){
+    
+    //myservo.write(j);  //this way is too easy, makes too much sense
+
+    servoSweep(k, j, 5);
+    k = j;
 
     //when an exit is detected, save the linear and angular location relative to the starting position
     if(normalizedDist() > 30){
@@ -296,11 +328,11 @@ for (int i=0; i<=6; i++){
   }
 
   //return servo to forward position
-  myservo.write(90);
+  servoSweep(180, 85, 5);
 
   //only deive straight if robot is not already at end of hall
   if(i<6){
-  driveStraight(31, 30, 30.5, 2);
+  driveStraight(20, 20, 30.5, 2);
   }
   
 }
