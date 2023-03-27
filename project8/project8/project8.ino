@@ -332,10 +332,21 @@ for (int i=0; i<=6; i++){
 
   //only deive straight if robot is not already at end of hall
   if(i<6){
-  driveStraight(20, 20, 30.5, 2);
+  driveStraight(30, 30, 30.5, 1);
   }
   
 }
 //begin navigating to exit
+
+delay(500);
+rotateDegrees(180, "CCW", 20, 20, 3);
+delay(500);
+driveStraight(30, 30, (6-steps[0])*30.5, 1);
+delay(500);
+String dir;
+if(steps[1] == 0){dir = "CCW";}
+else{dir = "CW";}
+rotateDegrees(90, dir, 20, 20, 2);
+driveStraight(30, 30, 100, 0);
 
 }
