@@ -26,8 +26,8 @@ void setup() {
   resetLeftEncoderCnt();  
   resetRightEncoderCnt();
 
-  myservo.attach(38);   // attaches the servo on Port 2.4 (P2.4 or pin 38)to the servo object
-  myservo.write(85);     // Send it to the center position
+  myservo.attach(38, 600, 2650);   // attaches the servo on Port 2.4 (P2.4 or pin 38)to the servo object
+  myservo.write(90);     // Send it to the center position
 
 }
 
@@ -328,7 +328,7 @@ for (int i=0; i<=6; i++){
   }
 
   //return servo to forward position
-  servoSweep(180, 85, 5);
+  servoSweep(180, 90, 5);
 
   //only deive straight if robot is not already at end of hall
   if(i<6){
