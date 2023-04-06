@@ -1,61 +1,230 @@
-  #include <Servo.h>
-  #include "SimpleRSLK.h"
+//
+//  Bradley Morgan and Jacob Santschi
+//  Intro to Robotics
+//  4-4-2023
+//  LAB 09
+//
 
-  Servo myservo;  // create servo object to control a servo
+#include <Servo.h>
+#include "SimpleRSLK.h"
+
+Servo myservo;  // create servo object to control a servo
+
+uint16_t sensorVal[LS_NUM_SENSORS];
+uint16_t sensorCalVal[LS_NUM_SENSORS];
+uint16_t sensorMaxVal[LS_NUM_SENSORS];
+uint16_t sensorMinVal[LS_NUM_SENSORS];
 
   const int trigPin = 32;           //connects to the trigger pin on the distance sensor       
   const int echoPin = 33;           //connects to the echo pin on the distance sensor      
   float distance = 0;               //stores the distance measured by the distance sensor
 
+  long double encTarget = 0;
+
   #define PULSES_1CM 16.37022272
-  #define ENCODER_DIFF 1
+  #define ENCODER_DIFF 1  
 
 void setup() {
   // put your setup code here, to run once:
-
-  #include "SimpleRSLK.h"
-
-  Serial.begin (9600);
-  setupRSLK();
-  pinMode(trigPin, OUTPUT);   //the trigger pin will output pulses of electricity 
-  pinMode(echoPin, INPUT);    //the echo pin will measure the duration of 
+    setupRSLK();
+    myservo.attach(38, 600, 2650);   // attaches the servo on Port 2.4 (P2.4 or pin 38)to the servo object
+    myservo.write(90);     // Send it to the center position
+    Serial.begin(9600);
+    pinMode(trigPin, OUTPUT);   //the trigger pin will output pulses of electricity 
+    pinMode(echoPin, INPUT);    //the echo pin will measure the duration of 
                               //pulses coming back from the distance sensor
-  pinMode(LP_LEFT_BTN, INPUT_PULLUP);
-  pinMode(LP_RIGHT_BTN, INPUT_PULLUP);
+    pinMode(LP_LEFT_BTN, INPUT_PULLUP);
+    pinMode(LP_RIGHT_BTN, INPUT_PULLUP);
+    
+    delay(2000);
 
-  resetLeftEncoderCnt();  
-  resetRightEncoderCnt();
+    floorCalibration();
 
-  myservo.attach(38, 600, 2650);   // attaches the servo on Port 2.4 (P2.4 or pin 38)to the servo object
-  myservo.write(90);     // Send it to the center position
+    delay(2000);
 
-    while(1){
-    float dist = normalizedDist();
-    Serial.println(dist);
-    delay(200);
-  }
-
+    resetLeftEncoderCnt();  
+    resetRightEncoderCnt();
 
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // put your main code here, to run repeatedly: 
 
-if (digitalRead(LP_LEFT_BTN) == LOW){
+  if (digitalRead(LP_LEFT_BTN) == LOW){
 
-  //countdown
-  for(int s=0; s<=2; s++){
-  digitalWrite(BLUE_LED, HIGH);
-  delay(500);
-  digitalWrite(BLUE_LED, LOW);
-  delay(500);
+    resetLeftEncoderCnt();  
+    resetRightEncoderCnt();
+
+
+    delay(3000);
+    digitalWrite(GREEN_LED, HIGH);
+    delay(1000);
+    digitalWrite(GREEN_LED, LOW);
+    myservo.write(90);
+
+    float dist = 9999;
+    int scan;
+    int lowest;
+    int lowest2;
+    int servoPos = 0;
+
+  for(int i=0;i<=180;i=i+5){
+
+        servoSweep(servoPos, i, 5);
+        servoPos = i;
+    
+        scan = normalizedDist(9);
+        if(scan < dist){
+          lowest = i;
+          dist = scan;
+        }
+        if (scan == dist){
+          lowest2 = i;
+        }
+      
+      }
+
+      if(lowest>90){
+        rotateDegrees(((lowest+lowest2)/2-90), "CCW", 20, 20, 0, 1);
+      }
+
+      if(lowest<=90){
+        rotateDegrees((90-(lowest+lowest2)/2), "CW", 20, 20, 0, 1);
+      }
+
+      servoSweep(servoPos, 90, 5);
+      servoPos = 90;
+      delay(1000);
+
+
+  float distances[4];
+  for(int i=0; i<4; i++){
+    distances[i] = {normalizedDist(9)};
+    digitalWrite(BLUE_LED, HIGH);
+    delay(100);
+    digitalWrite(BLUE_LED, LOW);
+    delay(100);
+    if(i<3){rotateDegrees(90, "CW", 20, 20, 0, 1);}
   }
 
-  //off and running
-  escapeHallway();
+  float xError = abs(((distances[1] + distances[3])/2) - distances[3]);
+  float yError = abs(((distances[2] + distances[0])/2) - distances[0]);
+  float linError = sqrt(pow(xError, 2) + pow(yError, 2));
+  float angError = (90-abs(atan(yError / xError)*(180/3.141592)));
+  rotateDegrees(90, "CCW", 20, 20, 0, 1);
 
+  delay(1000);
+  String turn;
+  if(distances[3] < distances[1]){ turn = "CCW";}
+  if(distances[1] < distances[3]){ turn = "CW";}
+
+
+    
+  rotateDegrees(angError, turn, 20, 20, 0, 1);
+  delay(500);
+  driveStraight(30, 30, linError, 0, 1);
+
+  delay(500);
+
+  while(1){
+  lineFollow();
+  }
+  
+  
+  
 
 }
+
+}
+
+////////////////////////////////
+//Function Name: floorCalibration
+//description: robot will drive a short distance forward while scanning the floor without the line to
+//establish a background reflectance level
+//input: none
+//output: void
+/////////////////////////////////
+void floorCalibration() {
+  /* Place Robot On Floor (no line) */
+
+  /* Set both motors direction forward */
+  setMotorDirection(BOTH_MOTORS,MOTOR_DIR_FORWARD);
+  /* Enable both motors */
+  enableMotor(BOTH_MOTORS);
+  /* Set both motors speed 20 */
+  setMotorSpeed(BOTH_MOTORS,20);
+
+  for(int x = 0;x<100;x++){
+    readLineSensor(sensorVal);
+    setSensorMinMax(sensorVal,sensorMinVal,sensorMaxVal);
+  }
+
+  /* Disable both motors */
+  disableMotor(BOTH_MOTORS);
+}
+
+///////////////////////////////////////////
+//Function name: lineFollow
+//description: orchestrates movements and line scanning to make the robot follow the line on the floor.
+//input: none
+//output: void
+////////////////////////////////////////
+void lineFollow(){
+
+  uint8_t lineColor = DARK_LINE;
+
+    readLineSensor(sensorVal);
+  readCalLineSensor(sensorVal,
+            sensorCalVal,
+            sensorMinVal,
+            sensorMaxVal,
+            lineColor);
+
+uint32_t linePos = getLinePosition(sensorCalVal,lineColor);
+  //Serial.println(linePos);
+
+  if((linePos == 0) or (linePos > 7000)){
+    rotateDegrees(15, "CCW", 20, 20, 0, 0);
+  }
+
+  //when robot is far left of center, sharper left turn and scoot forward
+  if ((linePos < 1501) and (linePos != 0)){
+    //Serial.println("Big left turn");
+    rotateDegrees(20,"CCW",20,20,0, 0);
+    driveStraight(20,20,1,0,0);
+  }
+
+  //when robot is slightly left of center, slight left turn and scoot forward
+  if ((linePos > 1500) and (linePos < 3000)){
+    //Serial.println("Small feft turn");
+    rotateDegrees(10,"CCW", 20, 20, 0,0);
+    driveStraight(20,20,1,0,0);
+  }
+
+  //when robot is centered on the line, scoot forward
+  if ((linePos > 2999) and (linePos < 4001)){
+    //Serial.println("Forward");
+    driveStraight(20,20,1,0,0);
+  }
+
+  //when robot is slightly right of center, slight right turn and scoot forward
+  if ((linePos > 4000) and (linePos < 5500)){
+    //Serial.println("Small right turn");
+    rotateDegrees(10,"CW", 20, 20, 0,0);
+    driveStraight(20,20,1,0,0);
+  }
+
+  //when robot is far right of center, sharper right turn and scoot forward
+  if (linePos > 5499){
+    //Serial.println("Big right turn");
+    rotateDegrees(20,"CW", 20, 20, 0,0);
+    driveStraight(20,20,1,0,0);
+  }
+
+  if(normalizedDist(3) <= 23){
+    while(1){}
+    }
+
 }
 
 /////////////////////////////////////////////
@@ -65,8 +234,7 @@ if (digitalRead(LP_LEFT_BTN) == LOW){
 //inputs: none
 //outputs: float
 ///////////////////////////////////////////////
-float normalizedDist(){
-  int numScans = 7;
+float normalizedDist(int numScans){
   float values[numScans];
   for (int i = 0; i < numScans; i++){
 
@@ -138,11 +306,9 @@ void allStop(){
 //output: void
 //ROBOT IS ASSUMED TO BE AT REST WHEN THIS FUNCTION IS CALLED
 /////////////////////////////////////////////////////////////
-void rotateDegrees (int turnAngle, String direction, int speedLeft, int speedRight, float overshoot){
+void rotateDegrees (int turnAngle, String direction, int speedLeft, int speedRight, float overshoot, int correction){
 
   // Define speed and encoder count variables 
-  int l_oldCount = getEncoderLeftCnt(); 
-  int r_oldCount = getEncoderRightCnt();
 
   //set motor directions for clockwise turning
   if(direction == "CW"){
@@ -157,16 +323,18 @@ void rotateDegrees (int turnAngle, String direction, int speedLeft, int speedRig
   }
 
   //14.05*pi cm per 1 degree of robot turn, 
-  int turnPulses = (2.00714*(turnAngle*1.00625-overshoot)); 
+  encTarget = encTarget + (2.00714*(turnAngle*1.00625-overshoot)); 
   //compensate for measurement error and stoppage rollover
 
   setRawMotorSpeed(LEFT_MOTOR, speedLeft);         // Set motor speeds - variable,  
   setRawMotorSpeed(RIGHT_MOTOR, speedRight);        //   may change (adjust) later 
   enableMotor(BOTH_MOTORS);                         // "Turn on" the motor  
 
-
+    
     // if right motor is too fast, speed up the left motor and slow the right 
-    while((getEncoderLeftCnt() < turnPulses + l_oldCount) or (getEncoderRightCnt()< turnPulses + r_oldCount)) {
+    while((getEncoderLeftCnt() < encTarget) or (getEncoderRightCnt()< encTarget)) {
+
+    if(correction ==1){  
     if((getEncoderLeftCnt()+ENCODER_DIFF) < getEncoderRightCnt()) {
     setRawMotorSpeed(LEFT_MOTOR, speedLeft + 2);
     setRawMotorSpeed(RIGHT_MOTOR, speedRight - 2);
@@ -186,9 +354,12 @@ void rotateDegrees (int turnAngle, String direction, int speedLeft, int speedRig
     setRawMotorSpeed(LEFT_MOTOR, speedLeft);
     }
 
+    }
+
+
     // Stop motors if they reach requisite pulses 
-    if (getEncoderLeftCnt() >= turnPulses + l_oldCount) disableMotor(LEFT_MOTOR); 
-    if (getEncoderRightCnt() >= turnPulses + r_oldCount) disableMotor(RIGHT_MOTOR);
+    if (getEncoderLeftCnt() >= encTarget) disableMotor(LEFT_MOTOR); 
+    if (getEncoderRightCnt() >= encTarget) disableMotor(RIGHT_MOTOR);
 
   }
 
@@ -206,25 +377,21 @@ void rotateDegrees (int turnAngle, String direction, int speedLeft, int speedRig
 //output: void
 //ROBOT IS ASSUMED TO BE AT REST WHEN THIS FUNCTION IS CALLED
 //////////////////////////////////////////////////////////
-void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot) { 
+void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot, int correction) { 
  
   // Define speed and encoder count variables 
-
-  int l_oldCount = getEncoderLeftCnt(); 
-  int r_oldCount = getEncoderRightCnt(); 
-  int old_count = 0;
-  String steering = "center";
-  //uint16_t num_pulses = 0; 
  
   // compute the number of pulses for drivecm centimeters 
-  int  num_pulses = (int) (((distCM - overshoot) * PULSES_1CM) + 0.5); 
+  encTarget =(int) (encTarget + (((distCM - overshoot) * PULSES_1CM) + 0.5)); 
 
   setMotorDirection(BOTH_MOTORS,MOTOR_DIR_FORWARD); // Cause the robot to drive forward  
   setRawMotorSpeed(LEFT_MOTOR, speedLeft);         // Set motor speeds - variable,  
   setRawMotorSpeed(RIGHT_MOTOR, speedRight);        //   may change (adjust) later 
   enableMotor(BOTH_MOTORS);                         // "Turn on" the motor  
  
-  while((getEncoderLeftCnt() < num_pulses + l_oldCount) || (getEncoderRightCnt() < num_pulses + r_oldCount)) {
+  while((getEncoderLeftCnt() < encTarget) || (getEncoderRightCnt() < encTarget)) {
+
+    if(correction == 1){
     digitalWrite(RED_LED, LOW);
     digitalWrite(BLUE_LED, LOW);
 
@@ -251,9 +418,11 @@ void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot
         setRawMotorSpeed(LEFT_MOTOR, speedLeft);
         }
 
+    }
+
         // Stop motors if they reach requisite pulses 
-        if ((getEncoderLeftCnt() - l_oldCount) >= num_pulses) disableMotor(LEFT_MOTOR); 
-        if (getEncoderRightCnt() - r_oldCount >= num_pulses ) disableMotor(RIGHT_MOTOR);
+        if (getEncoderLeftCnt() >= encTarget) disableMotor(LEFT_MOTOR); 
+        if (getEncoderRightCnt() >= encTarget) disableMotor(RIGHT_MOTOR);
   }
 
   disableMotor(LEFT_MOTOR); 
@@ -274,8 +443,8 @@ void servoSweep(int startDeg, int endDeg, int incDeg) {
   if(startDeg < endDeg){
     for(int pos=startDeg; pos<=endDeg; pos+=incDeg) {
       myservo.write(pos);                           // tell servo to go to position in variable 'pos'
-      Serial.print("Servo Position: ");             // Print servo position to serial monitor
-      Serial.println(pos);
+      //Serial.print("Servo Position: ");             // Print servo position to serial monitor
+      //Serial.println(pos);
       delay(17);                                    // waits for the servo to reach the position
     }
   }
@@ -283,77 +452,9 @@ void servoSweep(int startDeg, int endDeg, int incDeg) {
   if(startDeg > endDeg){
     for(int pos=startDeg; pos>=endDeg; pos-=incDeg) {
       myservo.write(pos);                           // tell servo to go to position in variable 'pos'
-      Serial.print("Servo Position: ");             // Print servo position to serial monitor
-      Serial.println(pos);
+      //Serial.print("Servo Position: ");             // Print servo position to serial monitor
+      //Serial.println(pos);
       delay(17);                                    // waits for the servo to reach the position
     }
   }
-}
-
-////////////////////////////////////////
-//function: escapeHallway
-//inputs: none
-//outputs: void
-//description: rotates until robot can see past obstacles, then completes one 
-//full circular sweep to ensure 2 consecutive edge detections.
-// then rotates to face the average of the two angles, and drives straight out.
-////////////////////////////////////////
-
-void escapeHallway(){;
-
-int steps[1];
-
-//scan, scan, drive 6 times.
-for (int i=0; i<=6; i++){
-  for (int j=0, k=90; j<=180; j=j+180){
-    
-    //myservo.write(j);  //this way is too easy, makes too much sense
-
-    servoSweep(k, j, 5);
-    k = j;
-
-    //when an exit is detected, save the linear and angular location relative to the starting position
-    if(normalizedDist() > 30){
-      steps[0] = i;
-      steps[1] = j;
-
-      
-      //das blinken lightsen indicator
-      digitalWrite(RED_LED, LOW);
-      digitalWrite(BLUE_LED, LOW);
-      digitalWrite(GREEN_LED, HIGH);
-      
-      delay(1000);
-
-      //das blinken lightsen indicator
-      digitalWrite(RED_LED, LOW);
-      digitalWrite(BLUE_LED, LOW);
-      digitalWrite(GREEN_LED, LOW);
-      
-    }
-    
-  }
-
-  //return servo to forward position
-  servoSweep(180, 90, 5);
-
-  //only deive straight if robot is not already at end of hall
-  if(i<6){
-  driveStraight(30, 30, 30.5, 1);
-  }
-  
-}
-//begin navigating to exit
-
-delay(500);
-rotateDegrees(180, "CCW", 20, 20, 3);
-delay(500);
-driveStraight(30, 30, (6-steps[0])*30.5, 1);
-delay(500);
-String dir;
-if(steps[1] == 0){dir = "CCW";}
-else{dir = "CW";}
-rotateDegrees(90, dir, 20, 20, 2);
-driveStraight(30, 30, 100, 0);
-
 }
