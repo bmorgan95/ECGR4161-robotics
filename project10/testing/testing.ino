@@ -47,7 +47,8 @@ void setup() {
     resetLeftEncoderCnt();        //prepare for the countings
     resetRightEncoderCnt();
 
-    while(digitalRead(LP_LEFT_BTN) == HIGH){} //do nothing until left button
+    while(digitalRead(LP_LEFT_BTN) == HIGH){
+    } //do nothing until left button
 
     //follow line until uSonic returns less than 8cm
   while(normalizedDist(2) > 17){
@@ -93,14 +94,14 @@ void loop() {
   //turn to correct direction
 
   if (direction == 0){
-    rotateDegrees(90, "CW", 20, 20, 2, 1, 1);
+    rotateDegrees(90, "CW", 20, 20, 0, 1, 1);
     //Serial.println("turn done");
     allStop();
     delay(500);
   }
 
   if (direction == 180){
-    rotateDegrees(90, "CCW", 20, 20, 2, 1, 1);
+    rotateDegrees(90, "CCW", 20, 20, 0, 1, 1);
     //Serial.println("turn done");
     allStop();
     delay(500);
@@ -111,12 +112,18 @@ void loop() {
   encTarget = 0; 
   
   //travel until front bumper is 8cm from wall
-    while(normalizedDist(3) > 15){
-      driveStraight(30, 30, (1), 0, 1, 0);
+    while(normalizedDist(3) > 23){
+      driveStraight(20, 20, (5), 0, 1, 0);
     }
 
   //one more drive function, this time with stop enabled to make sure the robot stops straight
-  driveStraight(30, 30, (1), 0, 1, 1);
+  while(normalizedDist(3) > 13){
+    driveStraight(20, 20, (1), 0, 1, 1);
+  }
+
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(BLUE_LED, LOW);
+
   
   allStop();
 
@@ -377,9 +384,7 @@ void rotateDegrees (int turnAngle, String direction, int speedLeft, int speedRig
 //output: void
 //ROBOT IS ASSUMED TO BE AT REST WHEN THIS FUNCTION IS CALLED
 //////////////////////////////////////////////////////////
-void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot, int correction, int endStop) { 
- 
-  // Define speed and encoder count variables 
+void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot, int correction, int endStop) {  
  
   // compute the number of pulses for drivecm centimeters 
   encTarget =(int) (encTarget + (((distCM - overshoot) * PULSES_1CM) + 0.5)); 
@@ -392,8 +397,8 @@ void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot
   while((getEncoderLeftCnt() < encTarget) or (getEncoderRightCnt() < encTarget)) {
 
     if(correction == 1){
-    digitalWrite(RED_LED, LOW);
-    digitalWrite(BLUE_LED, LOW);
+    //digitalWrite(RED_LED, LOW);
+    //digitalWrite(BLUE_LED, LOW);
 
     //run the loop as long as either wheel has travelled
     //fewer than the required number of pulses
@@ -403,6 +408,7 @@ void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot
         setRawMotorSpeed(LEFT_MOTOR, speedLeft + 4);
         setRawMotorSpeed(RIGHT_MOTOR, speedRight - 4);
         digitalWrite(RED_LED, HIGH);
+        digitalWrite(BLUE_LED, LOW);
         }
 
         // if left motor is too fast, speed up the right motor and slow the left
@@ -410,12 +416,16 @@ void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot
         setRawMotorSpeed(RIGHT_MOTOR, speedRight + 4);
         setRawMotorSpeed(LEFT_MOTOR, speedLeft - 4);
         digitalWrite(BLUE_LED, HIGH);
+        digitalWrite(RED_LED, LOW);
         }
 
         // if encoders are equal to within allowed offset, set motors to default speed
         else{
         setRawMotorSpeed(RIGHT_MOTOR, speedRight);
         setRawMotorSpeed(LEFT_MOTOR, speedLeft);
+        digitalWrite(RED_LED, LOW);
+        digitalWrite(BLUE_LED, LOW);
+
         }
 
     }

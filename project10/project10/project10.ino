@@ -47,10 +47,19 @@ void setup() {
     resetLeftEncoderCnt();        //prepare for the countings
     resetRightEncoderCnt();
 
-    while(digitalRead(LP_LEFT_BTN) == HIGH){} //do nothing until left button
+    while(digitalRead(LP_LEFT_BTN) == HIGH){
+    } //do nothing until left button
+
+    //countdown
+  for(int s=0; s<=2; s++){
+  digitalWrite(BLUE_LED, HIGH);
+  delay(500);
+  digitalWrite(BLUE_LED, LOW);
+  delay(500);
+  }
 
     //follow line until uSonic returns less than 8cm
-  while(normalizedDist(3) > 17){
+  while(normalizedDist(2) > 17){
     lineFollow();
   }
 
@@ -67,9 +76,6 @@ void loop() {
   // put your main code here, to run repeatedly: 
   //robot is assumed to be at rest, at start of maze when entering loop first time
 
-  resetLeftEncoderCnt();        //prepare for the countings
-  resetRightEncoderCnt();
-  encTarget = 0;
 
   //scan 0, 90, 180, keeping track of which direction has the longest distance report
   float dist = 0;
@@ -87,40 +93,49 @@ void loop() {
   }
   servoSweep(i, 90, 5);
 
-  delay(1000);
+  delay(500);
 
   resetLeftEncoderCnt();        //prepare for the countings
   resetRightEncoderCnt();
-  encTarget = 0;
-
+  encTarget = 0; 
 
   //turn to correct direction
 
   if (direction == 0){
-    rotateDegrees(90, "CW", 15, 15, 0, 1, 1);
-    Serial.println("turn done");
+    rotateDegrees(90, "CW", 20, 20, 0, 1, 1);
+    //Serial.println("turn done");
     allStop();
+    delay(500);
   }
 
   if (direction == 180){
-    rotateDegrees(90, "CCW", 15, 15, 0, 1, 1);
-    Serial.println("turn done");
+    rotateDegrees(90, "CCW", 20, 20, 0, 1, 1);
+    //Serial.println("turn done");
     allStop();
+    delay(500);
   }
-
-  delay(1000);
 
   resetLeftEncoderCnt();        //prepare for the countings
   resetRightEncoderCnt();
-  encTarget = 0;
-
+  encTarget = 0; 
+  
   //travel until front bumper is 8cm from wall
-  while(normalizedDist(3) > 17){
-    driveStraight(25, 25, 1, 0, 1, 0);
+    while(normalizedDist(3) > 23){
+      driveStraight(20, 20, (5), 0, 1, 0);
+    }
+
+  //one more drive function, this time with stop enabled to make sure the robot stops straight
+  while(normalizedDist(3) > 13){
+    driveStraight(20, 20, (1), 0, 1, 1);
   }
+
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(BLUE_LED, LOW);
+
+  
   allStop();
 
-  delay(1000);
+  delay(500);
 }
 
 ////////////////////////////////
@@ -170,41 +185,55 @@ uint32_t linePos = getLinePosition(sensorCalVal,lineColor);
   //Serial.println(linePos);
 
   if((linePos == 0) or (linePos > 7000)){
-    rotateDegrees(15, "CCW", 20, 20, 0, 1, 0);
+    rotateDegrees(15, "CCW", 20, 20, 0, 1, 1);
   }
 
   //when robot is far left of center, sharper left turn and scoot forward
-  if ((linePos < 1501) and (linePos != 0)){
+  if ((linePos < 1000) and (linePos != 0)){
     //Serial.println("Big left turn");
-    rotateDegrees(20,"CCW",20,20,0, 1, 0);
-    driveStraight(20,20,1,0,1, 0);
+    rotateDegrees(20, "CCW", 20, 20, 0, 1, 1);
+    driveStraight(20, 20, 1, 0, 1, 1);
   }
 
   //when robot is slightly left of center, slight left turn and scoot forward
-  if ((linePos > 1500) and (linePos < 3250)){
+  if ((linePos > 999) and (linePos < 2000)){
     //Serial.println("Small feft turn");
-    rotateDegrees(10,"CCW", 20, 20, 0, 1, 0);
-    driveStraight(20, 20, 1, 0, 1, 0);
+    rotateDegrees(10, "CCW", 20, 20, 0, 1, 1);
+    driveStraight(20, 20, 1, 0, 1, 1);
+  }
+
+  //when robot is very slightly left of center, very slight left turn and scoot forward
+  if ((linePos > 1999) and (linePos < 3250)){
+    //Serial.println("Small feft turn");
+    rotateDegrees(5,"CCW", 20, 20, 0, 1, 1);
+    driveStraight(20, 20, 1, 0, 1, 1);
   }
 
   //when robot is centered on the line, scoot forward
-  if ((linePos > 3249) and (linePos < 47501)){
+  if ((linePos > 3249) and (linePos < 3750)){
     //Serial.println("Forward");
-    driveStraight(20, 20, 1, 0, 1, 0);
+    driveStraight(20, 20, 1, 0, 1, 1);
+  }
+
+  //when robot is very slightly right of center, very slight right turn and scoot forward
+  if ((linePos > 3749) and (linePos < 5000)){
+    //Serial.println("Small right turn");
+    rotateDegrees(5,"CW", 20, 20, 0, 1, 1);
+    driveStraight(20, 20, 1, 0, 1, 1);
   }
 
   //when robot is slightly right of center, slight right turn and scoot forward
-  if ((linePos > 4750) and (linePos < 5500)){
+  if ((linePos > 4999) and (linePos < 6000)){
     //Serial.println("Small right turn");
-    rotateDegrees(10,"CW", 20, 20, 0, 1, 0);
-    driveStraight(20, 20, 1, 0, 1, 0);
+    rotateDegrees(10,"CW", 20, 20, 0, 1, 1);
+    driveStraight(20, 20, 1, 0, 1, 1);
   }
 
   //when robot is far right of center, sharper right turn and scoot forward
-  if (linePos > 5499){
+  if (linePos > 5999){
     //Serial.println("Big right turn");
-    rotateDegrees(20,"CW", 20, 20, 0, 1, 0);
-    driveStraight(20, 20, 1, 0, 1, 0);
+    rotateDegrees(20,"CW", 20, 20, 0, 1, 1);
+    driveStraight(20, 20, 1, 0, 1, 1);
   }
 
 }
@@ -363,9 +392,7 @@ void rotateDegrees (int turnAngle, String direction, int speedLeft, int speedRig
 //output: void
 //ROBOT IS ASSUMED TO BE AT REST WHEN THIS FUNCTION IS CALLED
 //////////////////////////////////////////////////////////
-void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot, int correction, int endStop) { 
- 
-  // Define speed and encoder count variables 
+void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot, int correction, int endStop) {  
  
   // compute the number of pulses for drivecm centimeters 
   encTarget =(int) (encTarget + (((distCM - overshoot) * PULSES_1CM) + 0.5)); 
@@ -375,33 +402,38 @@ void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot
   setRawMotorSpeed(RIGHT_MOTOR, speedRight);        //   may change (adjust) later 
   enableMotor(BOTH_MOTORS);                         // "Turn on" the motor  
  
-  while((getEncoderLeftCnt() < encTarget) || (getEncoderRightCnt() < encTarget)) {
+  while((getEncoderLeftCnt() < encTarget) or (getEncoderRightCnt() < encTarget)) {
 
     if(correction == 1){
-    digitalWrite(RED_LED, LOW);
-    digitalWrite(BLUE_LED, LOW);
+    //digitalWrite(RED_LED, LOW);
+    //digitalWrite(BLUE_LED, LOW);
 
     //run the loop as long as either wheel has travelled
     //fewer than the required number of pulses
 
         // if right motor is too fast, speed up the left motor and slow the right 
         if((getEncoderLeftCnt()+ENCODER_DIFF) < getEncoderRightCnt()) {
-        setRawMotorSpeed(LEFT_MOTOR, speedLeft + 2);
-        setRawMotorSpeed(RIGHT_MOTOR, speedRight - 2);
+        setRawMotorSpeed(LEFT_MOTOR, speedLeft + 4);
+        setRawMotorSpeed(RIGHT_MOTOR, speedRight - 4);
         digitalWrite(RED_LED, HIGH);
+        digitalWrite(BLUE_LED, LOW);
         }
 
         // if left motor is too fast, speed up the right motor and slow the left
         else if((getEncoderRightCnt()+ENCODER_DIFF) < getEncoderLeftCnt()) {
-        setRawMotorSpeed(RIGHT_MOTOR, speedRight + 2);
-        setRawMotorSpeed(LEFT_MOTOR, speedLeft - 2);
+        setRawMotorSpeed(RIGHT_MOTOR, speedRight + 4);
+        setRawMotorSpeed(LEFT_MOTOR, speedLeft - 4);
         digitalWrite(BLUE_LED, HIGH);
+        digitalWrite(RED_LED, LOW);
         }
 
         // if encoders are equal to within allowed offset, set motors to default speed
         else{
         setRawMotorSpeed(RIGHT_MOTOR, speedRight);
         setRawMotorSpeed(LEFT_MOTOR, speedLeft);
+        digitalWrite(RED_LED, LOW);
+        digitalWrite(BLUE_LED, LOW);
+
         }
 
     }
