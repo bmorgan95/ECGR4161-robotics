@@ -66,7 +66,7 @@ void loop() {
   // put your main code here, to run repeatedly: 
   //robot is assumed to be at rest, at start of maze when entering loop first time
 
-  //stage1();
+  stage1();
   stage2();
   stage3();
 
@@ -106,7 +106,7 @@ void floorCalibration() {
 ////////////////////////////////////////
 void lineFollow(int endStop){
 
-//  uint8_t lineColor = DARK_LINE;
+  uint8_t lineColor = DARK_LINE;
 
     readLineSensor(sensorVal);
   readCalLineSensor(sensorVal,
@@ -126,48 +126,48 @@ uint32_t linePos = getLinePosition(sensorCalVal,lineColor);
   if ((linePos < 1000) and (linePos != 0)){
     //Serial.println("Big left turn");
     rotateDegrees(20, "CCW", 20, 20, 0, 1, endStop);
-    driveStraight(20, 20, 1, 0, 1, endStop);
+    driveStraight(20, 20, 1, 1, 0, 1, endStop, 0);
   }
 
   //when robot is slightly left of center, slight left turn and scoot forward
   if ((linePos > 999) and (linePos < 2000)){
     //Serial.println("Small feft turn");
     rotateDegrees(10, "CCW", 20, 20, 0, 1, endStop);
-    driveStraight(20, 20, 1, 0, 1, endStop);
+    driveStraight(20, 20, 1, 1, 0, 1, endStop, 0);
   }
 
   //when robot is very slightly left of center, very slight left turn and scoot forward
   if ((linePos > 1999) and (linePos < 3250)){
     //Serial.println("Small feft turn");
     rotateDegrees(5,"CCW", 20, 20, 0, 1, endStop);
-    driveStraight(20, 20, 1, 0, 1, endStop);
+    driveStraight(20, 20, 1, 1, 0, 1, endStop, 0);
   }
 
   //when robot is centered on the line, scoot forward
   if ((linePos > 3249) and (linePos < 3750)){
     //Serial.println("Forward");
-    driveStraight(20, 20, 1, 0, 1, endStop);
+    driveStraight(20, 20, 1, 1, 0, 1, endStop, 0);
   }
 
   //when robot is very slightly right of center, very slight right turn and scoot forward
   if ((linePos > 3749) and (linePos < 5000)){
     //Serial.println("Small right turn");
     rotateDegrees(5,"CW", 20, 20, 0, 1, endStop);
-    driveStraight(20, 20, 1, 0, 1, endStop);
+    driveStraight(20, 20, 1, 1, 0, 1, endStop, 0);
   }
 
   //when robot is slightly right of center, slight right turn and scoot forward
   if ((linePos > 4999) and (linePos < 6000)){
     //Serial.println("Small right turn");
     rotateDegrees(10,"CW", 20, 20, 0, 1, endStop);
-    driveStraight(20, 20, 1, 0, 1, endStop);
+    driveStraight(20, 20, 1, 1, 0, 1, endStop, 0);
   }
 
   //when robot is far right of center, sharper right turn and scoot forward
   if (linePos > 5999){
     //Serial.println("Big right turn");
     rotateDegrees(20,"CW", 20, 20, 0, 1, endStop);
-    driveStraight(20, 20, 1, 0, 1, endStop);
+    driveStraight(20, 20, 1, 1, 0, 1, endStop, 0);
   }
 
 }
@@ -326,14 +326,23 @@ void rotateDegrees (int turnAngle, String direction, int speedLeft, int speedRig
 //output: void
 //ROBOT IS ASSUMED TO BE AT REST WHEN THIS FUNCTION IS CALLED
 //////////////////////////////////////////////////////////
-void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot, int correction, int endStop) {  
+void driveStraight (int speedLeft, int speedRight, float distCM, int direction, float overshoot, int correction, int endStop, int cliff) {  
  
   // compute the number of pulses for drivecm centimeters 
   encTarget =(int) (encTarget + (((distCM - overshoot) * PULSES_1CM) + 0.5)); 
 
-  setMotorDirection(BOTH_MOTORS,MOTOR_DIR_FORWARD); // Cause the robot to drive forward  
+  if(direction == 1){
+  setMotorDirection(BOTH_MOTORS, MOTOR_DIR_FORWARD); // Cause the robot to drive forward  
+  }
+
+  if(direction == -1){
+  setMotorDirection(BOTH_MOTORS, MOTOR_DIR_BACKWARD); // Cause the robot to drive backward  
+  }
+
+  if(correction == 0){
   setRawMotorSpeed(LEFT_MOTOR, speedLeft);         // Set motor speeds - variable,  
   setRawMotorSpeed(RIGHT_MOTOR, speedRight);        //   may change (adjust) later 
+  }
   enableMotor(BOTH_MOTORS);                         // "Turn on" the motor  
  
   while((getEncoderLeftCnt() < encTarget) or (getEncoderRightCnt() < encTarget)) {
@@ -370,6 +379,19 @@ void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot
 
         }
 
+
+            readLineSensor(sensorVal);
+            readCalLineSensor(sensorVal,
+            sensorCalVal,
+            sensorMinVal,
+            sensorMaxVal,
+            lineColor);
+
+      if(isCliff(sensorCalVal,lineColor) == true){
+        allStop();
+        return;
+      }
+
     }
 
         if(endStop == 1){
@@ -377,6 +399,7 @@ void driveStraight (int speedLeft, int speedRight, float distCM, float overshoot
         if (getEncoderLeftCnt() >= encTarget) disableMotor(LEFT_MOTOR); 
         if (getEncoderRightCnt() >= encTarget) disableMotor(RIGHT_MOTOR);
         }
+ 
   }
 
   if(endStop == 1){
@@ -461,14 +484,21 @@ void localize(int angle, int interval){
 }
 
 //////////////////////////////////////////
-//function: cliff
+//function: isCliff
 //desc: detect finish line, return true or false
 //input: calVal mode
-//output: finish
+//output: cliff
 //////////////////////////////////////////
 bool isCliff (uint16_t* calVal, uint8_t mode){
 
   bool cliff;
+
+  readLineSensor(sensorVal);
+  readCalLineSensor(sensorVal,
+            sensorCalVal,
+            sensorMinVal,
+            sensorMaxVal,
+            lineColor);
 
   uint32_t avg = 0; // this is for the weighted total
   uint32_t sum = 0; // this is for the denominator, which is <= 64000
@@ -497,6 +527,8 @@ if (sum > 6000){
   }
 return cliff; 
 }
+
+
 
 /////////////////////////////////////
 //function: stage 1
@@ -534,7 +566,7 @@ void stage1(){
     
   rotateDegrees(angError, turn, 20, 20, 0, 1, 1);          //navigate to center
   delay(500);
-  driveStraight(30, 30, linError, 0, 1, 1);
+  driveStraight(30, 30, linError, 1, 0, 1, 1, 0);
 
   delay(500);
   
@@ -548,6 +580,10 @@ void stage1(){
 //////////////////////////////////////
 
 void stage2(){
+
+  while(normalizedDist(2) > 35){
+    lineFollow(0);
+  }
 
   while(normalizedDist(2) > 15){
     lineFollow(1);
@@ -573,67 +609,184 @@ void stage2(){
 //////////////////////////////////////
 
 void stage3(){
+
   rotateDegrees(90, "CW", 20, 20, 0, 1, 1); 
-
-  while(1){
-
-    myservo.write(90);
-
-    delay(200);
-
-    int dist = (int)((normalizedDist(7) - 17)*PULSES_1CM); 
 
     resetLeftEncoderCnt();        //prepare for the countings
     resetRightEncoderCnt();
     encTarget = 0;
 
+    int encTargetPrior = 0;
+
+    int dist = 0;
+
+  while(1){
+
+    myservo.write(90);
+
+    delay(500);
+
+    dist = (int) ((normalizedDist(7))*PULSES_1CM); 
+
+    
     myservo.write(180);
 
-    delay(200);
+    delay(500);
+
+    //drive until left wall is detected
+
+     resetLeftEncoderCnt();        //prepare for the countings
+    resetRightEncoderCnt();
+    encTarget = 0;
+
+  while((normalizedDist(5) > 30) and (encTarget < (dist - 280)) and (isCliff(sensorCalVal,lineColor) == false)){
+    driveStraight(20, 21, 5, 1, 0, 1, 0, 1);
     
-  while((normalizedDist(5) < 40) and (encTarget < dist-) and (isCliff(sensorCalVal,lineColor) == false)){
-    driveStraight(20, 20, 5, 0, 1, 0);
+
   }
-  driveStraight(20, 20, 10, 0, 1, 1);
+
+  digitalWrite(GREEN_LED, HIGH);
+
+  //drive until left wall is no longer detected, far wall is reached, or cliff is detected
+
+  
+  while((normalizedDist(5) < 30) and (encTarget < (dist - 280)) and (isCliff(sensorCalVal,lineColor) == false)){
+    
+    driveStraight(20, 21, 5, 1, 0, 1, 0, 1);
+
+    }
+  
+
+
+  digitalWrite(GREEN_LED, LOW);
+
+    resetLeftEncoderCnt();        //prepare for the countings
+    resetRightEncoderCnt();
+    encTarget = 0;
+
+
+  //instructions for dealing with cliff
+
+  if(isCliff(sensorCalVal,lineColor) == true){
+
+    digitalWrite(RED_LED, HIGH);
+    
+    allStop();
+
+    delay(500);
+
+    //Serial.println("CLIFF!");
+    
+    driveStraight(20, 20, 3, -1, 0, 0, 0, 0);
+    
+   
+    driveStraight(20, 20, 12, -1, 0, 1, 1, 0);
+    
+    allStop();
+
+    delay(200);
+
+    rotateDegrees(180, "CW", 20, 20, 0, 1, 1); 
+    allStop();
+
+    delay(500);
+
+    int distL = normalizedDist(7);
+
+    myservo.write(90);
+
+    delay(200);
+
+    int distF = normalizedDist(7);
+
+    myservo.write(0);
+
+    delay(200);
+
+    int distR = normalizedDist(7);
+
+    delay(200);
+
+    if(distL > 25){
+      rotateDegrees(90, "CCW", 20, 20, 0, 1, 1);
+    }
+
+    else if(distF > 25){
+      
+    }
+
+   else if(distR > 25){
+    rotateDegrees(90, "CW", 20, 20, 0, 1, 1);
+   }
+
+   delay(500);
+   }
+
+
+   //instructions for having reached far wall
+
+  else if((encTarget) > (dist - 280)){
+
+    allStop();
+
+    delay(500);
+
+    int distL = normalizedDist(7);
+
+    myservo.write(90);
+
+    delay(200);
+
+    int distF = normalizedDist(7);
+
+    myservo.write(0);
+
+    delay(200);
+
+    int distR = normalizedDist(7);
+
+    delay(200);
+
+    if(distF > 25){
+      
+    }
+
+    else if(distL > 30){
+      rotateDegrees(90, "CCW", 20, 20, 0, 1, 1);
+    }
+
+   else if(distR > 30){
+    rotateDegrees(90, "CW", 20, 20, 0, 1, 1);
+   }
+
+   else{
+    rotateDegrees(180, "CW", 20, 20, 0, 1, 1);
+   }
+
+    //Serial.println("wall reached");
+
+    delay(500);
+  }
+
+  //instructions for no longer having left wall
+  
+  else if(normalizedDist(2) > 30){
+
+    allStop();
+
+  driveStraight(20, 20, 10, 1, 0, 1, 1, 1);
   allStop();
 
   delay(500);
+
+  //Serial.println("left wall gone");
 
   myservo.write(90);
 
   rotateDegrees(90, "CCW", 20, 20, 0, 1, 1); 
 
-  resetLeftEncoderCnt();        //prepare for the countings
-  resetRightEncoderCnt();
-  encTarget = 0;
-
-  dist = (int)((normalizedDist(7) - 17)*PULSES_1CM);
-
-  myservo.write(180);
-
-  delay(200);
-    
-  int legBegin = (20 * PULSES_1CM);
-
-  while((encTarget < dist) and (isCliff(sensorCalVal,lineColor) == false) and (encTarget < legBegin)){
-    driveStraight(20, 20, 5, 0, 1, 0);
   }
 
-  while((normalizedDist(5) < 40) and (encTarget < dist) and (isCliff(sensorCalVal,lineColor) == false)){
-    driveStraight(20, 20, 5, 0, 1, 0);
-  }
-  driveStraight(20, 20, 10, 0, 1, 1);
   allStop();
-
-  delay(500);
-
-  
-   //countdown
-  for(int s=1; s<=1; s++){
-  digitalWrite(BLUE_LED, HIGH);
-  delay(500);
-  digitalWrite(BLUE_LED, LOW);
-  delay(500);
-  }
-  }
+}
 }
