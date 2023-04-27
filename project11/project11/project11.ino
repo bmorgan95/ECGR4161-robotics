@@ -532,7 +532,7 @@ return cliff;
 
 /////////////////////////////////////
 //function: stage 1
-//description: do the stuff for the thing
+//description: Function to determine the robots position in a room, then navigate to the center.
 //input: none
 //output: void
 //////////////////////////////////////
@@ -574,7 +574,7 @@ void stage1(){
 
 /////////////////////////////////////
 //function: stage 2
-//description: do the stuff for the thing
+//description: Function to follow a line drawn on the floor, until it encounters a wall
 //input: none
 //output: void
 //////////////////////////////////////
@@ -603,7 +603,8 @@ void stage2(){
 
 /////////////////////////////////////
 //function: stage 3
-//description: do the stuff for the thing
+//description: Function to navigate through a maze by tracing the left wall, 
+//             avoiding false exits marked by lines on the floor
 //input: none
 //output: void
 //////////////////////////////////////
