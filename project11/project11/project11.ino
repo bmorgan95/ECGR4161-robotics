@@ -599,6 +599,23 @@ void stage2(){
 
   delay(500);
 
+   for(int i = 0; i<6; i++){
+    myservo.write(65);
+    delay(200);
+    float rdist = normalizedDist(5);
+    myservo.write(115);
+    delay(200);
+    float ldist = normalizedDist(5);
+    if(ldist > rdist){
+      rotateDegrees(1, "CW", 20, 20, 0, 1, 1);
+    }
+    if(rdist > ldist){
+      rotateDegrees(1, "CCW", 20, 20, 0, 1, 1);
+    }
+    }
+
+    delay(500);
+
 }
 
 /////////////////////////////////////
@@ -731,6 +748,27 @@ void stage3(){
     allStop();
 
     delay(500);
+
+     for(int i = 0; i<6; i++){
+    myservo.write(65);
+    delay(200);
+    float rdist = normalizedDist(5);
+    myservo.write(115);
+    delay(200);
+    float ldist = normalizedDist(5);
+    if(ldist > rdist){
+      rotateDegrees(1, "CW", 20, 20, 0, 1, 1);
+    }
+    if(rdist > ldist){
+      rotateDegrees(1, "CCW", 20, 20, 0, 1, 1);
+    }
+    }
+
+    delay(500);
+
+   myservo.write(180);
+
+   delay(200);
 
     int distL = normalizedDist(7);
 
